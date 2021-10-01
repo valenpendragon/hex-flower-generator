@@ -1,5 +1,5 @@
 import tkinter as tk
-from lib/classes import Hex
+from lib.classes import Hex
 
 
 class HexFlower():
