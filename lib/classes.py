@@ -1,7 +1,14 @@
 from collections import OrderedDict
+import tkinter as tk
+from Tools.pynche import ColorDB
+import os
+import colorsys
+import math
 
-class Hex(OrderedDict):
-    def __init__(self, dictionary):
+class Hex():
+    def __init__(self, number: int, vertex: tuple,
+                 label: str, adjacency: dict,
+                 color=None, icon=None):
         """
         This class requires a dictionary of values of the following form:
             number : int, number of the hex (1-19)
@@ -18,17 +25,54 @@ class Hex(OrderedDict):
                 a : top hex    b: upper right hex   c: lower right hex
                 d : bottom hex e: lover left hex    f: upper left hex          
         """
-        for k, v in dictionary.items():
-            if type(k) == dict:
-                # k is the adjacency subdictionary
-                for subk, subv in dictionary['adjacency'].items():
-                    setattr(self['adjacency'], subk, subv)
+        self.number = number
+        x,y = vertex
+        if (isinstance(x, int) or isinstance(x, float)) and \
+            (isinstance(y, int) or isinstance(y, float)):
+            self.vertex = vertex
+        else:
+            raise TypeError("Vertex coordinates must be a numbers")
+        self.label = str(label)
+        # Checking to see if color value set is valid.
+        if color is None:
+            self.color='white'
+        else:
+            if isinstance(color, str):
+                rgb_file = os.path.join(os.path.dirname(ColorDB.__file__),
+                                        'X', 'rgb.txt')
+                rgb_db = ColorDB.get_colordb(rgb_file)
+                colors = [x.lower().replace(' ', '') for x in rgb_db.unique_names()]
+                if color not in colors:
+                    raise ValueError("String is not a valid color for Python or tkinter")
+                else:
+                    self.color = color
             else:
-                setattr(self, k, v)
-    print(self)
+                raise ValueError("color must be a string for a valid color for Python or tkinter")
+        self.icon = icon
+        if isinstance(adjacency, dict):
+            for k in {'a', 'b', 'c', 'd', 'e', 'f'}:
+                self.adjacency[k] = adjacency[k]
+        else:
+            raise ValueError("Adjacency must be a dictionary with a, b, c, d, e, and f adjacent hex nubmers.")
+        print(self)
 
     def __str__(self):
-        super().__str__(self)
+        s = "Hex with attributes: number = {}, vertex = {}\n".format(self.number, 
+                                                                     self.vertex)
+        s = s + "label = {}, color = {}, icon = {}\n".format(self.label,
+                                                             self.color,
+                                                             self.icon)
+        s = s + "Adjency: {" + ",".join() + "}"
+        return s
 
     def __repr__(self):
-        super().__repr__(self)
+        pass
+
+    def center(self, side=20):
+        """
+        This method returns a tuple (x,y) coordinates of the center of this
+        Hex object. It requires a value of side, but allows for a default of 20.
+        """
+        c_x = round(side * math.cos(math.pi / 3) + self.vertex[0])
+        c_y = round(side * math.sin(math.pi / 3) + self.vertex[1])
+        return (c_x, c_y)
