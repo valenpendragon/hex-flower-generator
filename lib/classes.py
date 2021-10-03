@@ -55,7 +55,7 @@ class HexFlower():
         if isinstance(side, int) or isinstance(side, float):
             self.side = side
         else:
-            raise TypeError("Side lenght must be a number.")
+            raise TypeError("Side length must be a number.")
         if isinstance(height, int):
             self.canvas_height = height
         else:
@@ -140,66 +140,39 @@ class HexFlower():
             points.extend((x - b,     y + h))
             if diagnostic:
                 print(points)
-            if hex.color:
-                outline=hex.color
+            if hex.zone.color:
+                outline=hex.zone.color
             else:
                 outline="black"
-            fill=None # I will probably change this later.
+            fill=None # I will probably change this later based on zone.effect.
             canvas.create_polygon(points,
                                   outline=outline,
                                   fill=fill,
                                   width=width)
-            if hex.icon:
-                icon = tk.PhotoImage(file=hex.icon)
+            if hex.zone.icon:
+                icon = tk.PhotoImage(file=hex.zone.icon)
                 labels[ctr].extend(tk.Label(canvas, image=icon))
             else:
-                labels[ctr].extend(tk.Label(canvas, text=hex.label))
+                labels[ctr].extend(tk.Label(canvas, text=hex.zone.label))
             labels[ctr].place(x=x_c, y=y_c, anchor=tk.CENTER)
             ctr += 1
 
-class Hex():
-    def __init__(self, number: int, vertex: tuple,
-                 label: str, zone : str,
-                 adjacency: dict,
-                 color=None, icon=None, effect=None,
-                 diagnostic=False):
-        """
-        This class requires a dictionary of values of the following form:
-            number : int, , required, number of the hex (1-19)
-            vertex : tuple (x, y), required, coordinates of the left lower corner
-                        on the tk.Canvas for this hex to appear.
-            label  : str, required, what should appear if the icon is None
-            color  : str, optional, the value of the outline of the hex, it 
-                        can indicate the severity of the outcome
-            icon   : filename or None, optional. icon that will be displayed 
-                        in the hex if specified
-            zone   : str, required, describes threat level of this section
-                        of the Hex Flower, may alter the color of the Hex fill
-            effect : str or None, optional, this describes the outcome of 
-                        landing here
-            adjacency : dictionary storing the next hex in the flower to move
-                        to by edge of the hex numbered a through f starting at
-                        the top of the hex. Any adjacency that is None prevents
-                        movement for this turn
-                a : top hex    b: upper right hex   c: lower right hex
-                d : bottom hex e: lover left hex    f: upper left hex 
-                A None values means movement is blocked in that direction out
-                of the hex and the walk stays here for the next effect/outcome.
-        The diagnostic argument indicates if the program is running in diagnostic
-        mode, which prints logs to stdio.
-
-        Methods:
-            center : returns that coordinates of the center of the hex, has an
-                        has an optional side length for the side of the hex when
-                        printed on the canvas
-        """
-        self.number = number
-        x,y = vertex
-        if (isinstance(x, int) or isinstance(x, float)) and \
-            (isinstance(y, int) or isinstance(y, float)):
-            self.vertex = vertex
-        else:
-            raise TypeError("Vertex coordinates must be a numbers")
+class Zone():
+    """
+    Zone have the following attributes: 
+        type: str, required, default is 'basic',
+        color: str, required, no default
+        label: str, required, no default, but it is often str(Hex.number)
+        icon: str, optional, str is the relative path and filename of the icon
+               to be displayed in this Hex when the Hex Flower is drawn,
+               default is None
+        effect: str, optional, description of the severity of the zone in 
+                this Hex will appear, default is None
+    If the icon is None, the label will be displayed instead of an icon.
+    """
+    def __init__(self, color: str, label:str,
+                 type='basic', icon=None, effect=None):
+        self.type = type
         self.label = str(label)
         # Checking to see if color value set is valid.
         if color is None:
@@ -217,13 +190,65 @@ class Hex():
             else:
                 raise ValueError("color must be a string for a valid color for Python or tkinter")
         self.icon = icon
-        self.zone = zone
         self.effect = effect
+        
+
+class Hex():
+    """
+    This class requires a dictionary of values of the following form:
+        number : int, , required, number of the hex (1-19)
+        vertex : tuple (x, y), required, coordinates of the left lower corner
+                    on the tk.Canvas for this hex to appear.
+        zone   : str, required, describes threat level of this section
+                    of the Hex Flower, may alter the color of the Hex fill,
+                    also has its own attributes:
+            label  : str, required, what should appear if the icon is None
+            color  : str, optional, the value of the outline of the hex, it 
+                    can indicate the severity of the outcome
+            icon   : filename or None, optional. icon that will be displayed 
+                    in the hex if specified
+            effect : str or None, optional, this describes the outcome of 
+                    landing here
+        adjacency : dictionary storing the next hex in the flower to move
+                    to by edge of the hex numbered a through f starting at
+                    the top of the hex. Any adjacency that is None prevents
+                    movement for this turn
+            a : top hex    b: upper right hex   c: lower right hex
+            d : bottom hex e: lover left hex    f: upper left hex 
+            A None values means movement is blocked in that direction out
+            of the hex and the walk stays here for the next effect/outcome.
+    The diagnostic argument indicates if the program is running in diagnostic
+    mode, which prints logs to stdio.
+
+    Methods:
+        center : returns that coordinates of the center of the hex, has an
+                    has an optional side length for the side of the hex when
+                    printed on the canvas
+    """
+    def __init__(self, number: int, vertex: tuple,
+                 zone : str, label: str,
+                 adjacency: dict,
+                 color=None, icon=None, effect=None,
+                 diagnostic=False):
+        self.number = number
+        x,y = vertex
+        if (isinstance(x, int) or isinstance(x, float)) and \
+            (isinstance(y, int) or isinstance(y, float)):
+            self.vertex = vertex
+        else:
+            raise TypeError("Vertex coordinates must be a numbers")
+        if label is None:
+            label = str(self.number)
+        self.zone = Zone(color=color, label=label, type=zone, 
+                         icon=icon, effect=effect)
         if isinstance(adjacency, dict):
             for k in {'a', 'b', 'c', 'd', 'e', 'f'}:
-                self.adjacency[k] = adjacency[k]
+                if isinstance(adjacency[k], int) or adjacency[k] is None:
+                    self.adjacency[k] = adjacency[k]
+                else:
+                    raise ValueError("Adjacency values must Hex ID (int) or None.")
         else:
-            raise ValueError("Adjacency must be a dictionary with a, b, c, d, e, and f adjacent hex numbers.")
+            raise ValueError("Adjacency keys must be a, b, c, d, e, or f.")
         if diagnostic:
             print(self)
 

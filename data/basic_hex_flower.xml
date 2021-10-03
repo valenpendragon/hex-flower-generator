@@ -1,9 +1,7 @@
 <?xml version="1.0">
-<hex_flower type="basic", dice=('d6'.'d6')>
-    <hex number="1", vertex="(138,0)", icon=null, label="1">
-        <color>black</color>
-        <zone>normal</zone>
-        <effect>none</effect>
+<hex_flower type="basic", dice=('d6','d6')>
+    <hex number="1", vertex="(138,0)">
+        <zone label="", icon=null, color="black", effect=null>normal</zone>
         <adjacency>
             <a>5</a>
             <b>3</b>
@@ -11,7 +9,7 @@
             <d>null</d>
             <e>6</e>
             <f>2</f>
-        </adjacency>        
+        </adjacency>
     </hex>
     <hex number="2", vertex="(82,15)", icon=null, label="2">
         <color>grey</color>
