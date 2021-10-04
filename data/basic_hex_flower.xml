@@ -1,7 +1,7 @@
 <?xml version="1.0">
 <hex_flower type="basic", dice=('d6','d6')>
     <hex number="1", vertex="(138,0)">
-        <zone label="", icon=null, color="black", effect=null>normal</zone>
+        <zone type="normal", label="1", icon=null, color="black", effect=null></zone>
         <adjacency>
             <a>5</a>
             <b>3</b>
@@ -11,10 +11,8 @@
             <f>2</f>
         </adjacency>
     </hex>
-    <hex number="2", vertex="(82,15)", icon=null, label="2">
-        <color>grey</color>
-        <zone>normal</zone>
-        <effect>none</effect>
+    <hex number="2", vertex="(82,15)">
+        <zone type="normal", label="2", icon=null, color="grey", effect=null></zone>
         <adjacency>
             <a>7</a>
             <b>5</b>
@@ -24,10 +22,8 @@
             <f>4</f>
         </adjacency>        
     </hex>
-    <hex number="3", vertex="(194,15)", icon=null, label="3">
-        <color>grey</color>
-        <zone>normal</zone>
-        <effect>none</effect>
+    <hex number="3", vertex="(194,15)">
+        <zone type="normal", label="3", icon=null, color="grey", effect=null></zone>
         <adjacency>
             <a>8</a>
             <b>6</b>
@@ -37,10 +33,8 @@
             <f>5</f>
         </adjacency>        
     </hex>
-    <hex number="4", vertex="(26,30)", icon=null, label="4">
-        <color>grey</color>
-        <zone>normal</zone>
-        <effect>none</effect>
+    <hex number="4", vertex="(26,30)">
+        <zone type="normal", label="4", icon=null, color="grey", effect=null></zone>
         <adjacency>
             <a>9</a>
             <b>7</b>
@@ -50,10 +44,8 @@
             <f>1</f>
         </adjacency>        
     </hex>
-    <hex number="5", vertex="(138,30)", icon=null, label="5">
-        <color>grey</color>
-        <zone>normal</zone>
-        <effect>none</effect>
+    <hex number="5", vertex="(138,30)">
+        <zone type="normal", label="5", icon=null, color="grey", effect=null></zone>
         <adjacency>
             <a>10</a>
             <b>8</b>
@@ -63,10 +55,8 @@
             <f>7</f>
         </adjacency>
     </hex>
-    <hex number="6", vertex="(250,30)", icon=null, label="5">
-        <color>grey</color>
-        <zone>normal</zone>
-        <effect>none</effect>
+    <hex number="6", vertex="(250,30)">
+        <zone type="normal", label="6", icon=null, color="grey", effect=null></zone>
         <adjacency>
             <a>11</a>
             <b>1</b>
@@ -76,10 +66,8 @@
             <f>8</f>
         </adjacency>        
     </hex>
-    <hex number="7", vertex="(82,45)", icon=null, label="7">
-        <color>grey</color>
-        <zone>normal</zone>
-        <effect>none</effect>
+    <hex number="7", vertex="(82,45)">
+        <zone type="normal", label="7", icon=null, color="grey", effect=null></zone>
         <adjacency>
             <a>12</a>
             <b>10</b>
@@ -89,10 +77,8 @@
             <f>9</f>
         </adjacency>        
     </hex>
-    <hex number="8", vertex="(194,45)", icon=null, label="8">
-        <color>grey</color>
-        <zone>normal</zone>
-        <effect>none</effect>
+    <hex number="8", vertex="(194,45)">
+        <zone type="normal", label="8", icon=null, color="grey", effect=null></zone>
         <adjacency>
             <a>13</a>
             <b>11</b>
@@ -102,10 +88,8 @@
             <f>10</f>
         </adjacency>        
     </hex>
-    <hex number="9", vertex="(26,60)", icon=null, label="9">
-        <color>purple</color>
-        <zone>hazard</zone>
-        <effect>none</effect>
+    <hex number="9", vertex="(26,60)">
+        <zone type="hazard", label="9", icon=null, color="purple", effect=null></zone>
         <adjacency>
             <a>14</a>
             <b>12</b>
@@ -115,10 +99,8 @@
             <f>3</f>
         </adjacency>        
     </hex>
-    <hex number="10", vertex="(138,60)", icon=null, label="10">
-        <color>grey</color>
-        <zone>normal</zone>
-        <effect>none</effect>
+    <hex number="10", vertex="(138,60)">
+        <zone type="normal", label="10", icon=null, color="", effect=grey></zone>
         <adjacency>
             <a>15</a>
             <b>13</b>
@@ -128,10 +110,8 @@
             <f>12</f>
         </adjacency>        
     </hex>
-    <hex number="11", vertex="(250,60)", icon=null, label="11">
-        <color>green</color>
-        <zone>moderate</zone>
-        <effect>none</effect>
+    <hex number="11", vertex="(250,60)">
+        <zone type="moderate", label="11", icon=null, color="green", effect=null></zone>
         <adjacency>
             <a>16</a>
             <b>2</b>
@@ -141,10 +121,8 @@
             <f>13</f>
         </adjacency>        
     </hex>
-    <hex number="12", vertex="(82,75)", icon=null, label="12">
-        <color>purple</color>
-        <zone>hazard</zone>
-        <effect>none</effect>
+    <hex number="12", vertex="(82,75)">
+        <zone type="hazard", label="12", icon=null, color="purple", effect=null></zone>
         <adjacency>
             <a>17</a>
             <b>15</b>
@@ -154,10 +132,8 @@
             <f>14</f>
         </adjacency>        
     </hex>
-    <hex number="13", vertex="(194,75)", icon=null, label="13">
-        <color>green</color>
-        <zone>moderate</zone>
-        <effect>none</effect>
+    <hex number="13", vertex="(194,75)">
+        <zone type="moderate", label="13", icon=null, color="green", effect=null></zone>
         <adjacency>
             <a>18</a>
             <b>16</b>
@@ -167,10 +143,8 @@
             <f>15</f>
         </adjacency>        
     </hex>
-    <hex number="14", vertex="(26,90)", icon=null, label="14">
-        <color>purple</color>
-        <zone>hazard</zone>
-        <effect>none</effect>
+    <hex number="14", vertex="(26,90)">
+        <zone type="hazard", label="14", icon=null, color="purple", effect=null></zone>
         <adjacency>
             <a>4</a>
             <b>17</b>
@@ -180,10 +154,8 @@
             <f>6</f>
         </adjacency>        
     </hex>
-    <hex number="15", vertex="(138,90)", icon=null, label="15">
-        <color>yellow</color>
-        <zone>severe</zone>
-        <effect>none</effect>
+    <hex number="15", vertex="(138,90)">
+        <zone type="severe", label="15", icon=null, color="yellow", effect=null></zone>
         <adjacency>
             <a>19</a>
             <b>18</b>
@@ -193,10 +165,8 @@
             <f>17</f>
         </adjacency>        
     </hex>
-    <hex number="16", vertex="(250,90)", icon=null, label="16">
-        <color>green</color>
-        <zone>moderate</zone>
-        <effect>none</effect>
+    <hex number="16", vertex="(250,90)">
+        <zone type="moderate", label="16", icon=null, color="green", effect=null></zone>
         <adjacency>
             <a>6</a>
             <b>4</b>
@@ -206,10 +176,8 @@
             <f>18</f>
         </adjacency>        
     </hex>
-    <hex number="17", vertex="(82,105)", icon=null, label="17">
-        <color>yellow</color>
-        <zone>severe</zone>
-        <effect>none</effect>
+    <hex number="17", vertex="(82,105)">
+        <zone type="severe", label="17", icon=null, color="yellow", effect=null></zone>
         <adjacency>
             <a>2</a>
             <b>19</b>
@@ -219,10 +187,8 @@
             <f>11</f>
         </adjacency>        
     </hex>
-    <hex number="18", vertex="(194,105)", icon=null, label="18">
-        <color>yellow</color>
-        <zone>severe</zone>
-        <effect>none</effect>
+    <hex number="18", vertex="(194,105)">
+        <zone type="severe", label="18", icon=null, color="yellow", effect=null></zone>
         <adjacency>
             <a>3</a>
             <b>9</b>
@@ -232,10 +198,8 @@
             <f>19</f>
         </adjacency>        
     </hex>
-    <hex number="19", vertex="(138,120)", icon=null, label="19">
-        <color>red</color>
-        <zone>extreme</zone>
-        <effect>none</effect>
+    <hex number="19", vertex="(138,120)">
+        <zone type="extreme", label="19", icon=null, color="red", effect=null></zone>
         <adjacency>
             <a>null</a>
             <b>null</b>

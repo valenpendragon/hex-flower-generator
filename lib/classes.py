@@ -22,7 +22,7 @@ class HexFlower():
         proximity: Cartesian distance between a point and the center of each
                    Hex object, returns a list of tuples sorted by proximity
                    tuples are (distance to Hex, Hex.number)
-        drawHexFlower : this method draws the Hex Flower on the supplied 
+        drawHexFlower: this method draws the Hex Flower on the supplied 
                    canvas, using the attributes already designated in the
                    HF attributes and Hex attributes
     """
@@ -160,7 +160,7 @@ class HexFlower():
 class Zone():
     """
     Zone have the following attributes: 
-        type: str, required, default is 'basic',
+        type: str, required, default is 'normal',
         color: str, required, no default
         label: str, required, no default, but it is often str(Hex.number)
         icon: str, optional, str is the relative path and filename of the icon
@@ -171,7 +171,7 @@ class Zone():
     If the icon is None, the label will be displayed instead of an icon.
     """
     def __init__(self, color: str, label:str,
-                 type='basic', icon=None, effect=None):
+                 type='normal', icon=None, effect=None):
         self.type = type
         self.label = str(label)
         # Checking to see if color value set is valid.
@@ -196,20 +196,22 @@ class Zone():
 class Hex():
     """
     This class requires a dictionary of values of the following form:
-        number : int, , required, number of the hex (1-19)
-        vertex : tuple (x, y), required, coordinates of the left lower corner
+        number: int, , required, number of the hex (1-19)
+        vertex: tuple (x, y), required, coordinates of the left lower corner
                     on the tk.Canvas for this hex to appear.
-        zone   : str, required, describes threat level of this section
+        zone Zone, required, describes threat level of this section
                     of the Hex Flower, may alter the color of the Hex fill,
                     also has its own attributes:
-            label  : str, required, what should appear if the icon is None
-            color  : str, optional, the value of the outline of the hex, it 
+            type: str, required, it is severity of this zone in a word,
+                    default is normal
+            label: str, required, what should appear if the icon is None
+            color: str, optional, the value of the outline of the hex, it 
                     can indicate the severity of the outcome
-            icon   : filename or None, optional. icon that will be displayed 
+            icon: filename or None, optional. icon that will be displayed 
                     in the hex if specified
-            effect : str or None, optional, this describes the outcome of 
+            effect: str or None, optional, this describes the outcome of 
                     landing here
-        adjacency : dictionary storing the next hex in the flower to move
+        adjacency: dictionary storing the next hex in the flower to move
                     to by edge of the hex numbered a through f starting at
                     the top of the hex. Any adjacency that is None prevents
                     movement for this turn
@@ -225,9 +227,8 @@ class Hex():
                     has an optional side length for the side of the hex when
                     printed on the canvas
     """
-    def __init__(self, number: int, vertex: tuple,
-                 zone : str, label: str,
-                 adjacency: dict,
+    def __init__(self, number: int, vertex: tuple, label: str,
+                 adjacency: dict,  type='normal',
                  color=None, icon=None, effect=None,
                  diagnostic=False):
         self.number = number
@@ -239,7 +240,7 @@ class Hex():
             raise TypeError("Vertex coordinates must be a numbers")
         if label is None:
             label = str(self.number)
-        self.zone = Zone(color=color, label=label, type=zone, 
+        self.zone = Zone(color=color, label=label, type=type, 
                          icon=icon, effect=effect)
         if isinstance(adjacency, dict):
             for k in {'a', 'b', 'c', 'd', 'e', 'f'}:
