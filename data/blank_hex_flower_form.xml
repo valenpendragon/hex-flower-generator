@@ -1,14 +1,14 @@
-<?xml version="1.0">
-<!-- this blank form shows the default values for attributes that have them  -->
-<hex_flower type="basic", dice=('d6','d6')>
-    <hex number="", vertex="()">
-        <zone type="", label="", icon=null, color="", effect=null></zone>
+<?xml version="1.0" standalone='yes'?>
+<hex_flower type="type" dice="(d6,d6)">
+	<hex id="integer" vertex="(138,0)">
+    	<zone type="type" label="1" icon="null" color="black" effect="null"></zone>
         <adjacency>
-            <a></a>
-            <b></b>
-            <c></c>
-            <d></d>
-            <e></e>
-            <f></f>
-        </adjacency>        
-    </hex>
+            <a>5</a>
+            <b>3</b>
+            <c>4</c>
+            <d>null</d>
+            <e>6</e>
+            <f>2</f>
+        </adjacency>
+	</hex>
+</hex_flower>

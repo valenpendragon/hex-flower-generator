@@ -7,8 +7,8 @@ import math
 class HexFlower():
     """
     This class takes a list of 19 Hex objects and adds them in the
-    order of the Hex.number value. They need to be numbered 1 through 19
-    in the Hex.number attribute.
+    order of the Hex.id value. They need to be numbered 1 through 19
+    in the Hex.id attribute.
 
     Class Attributes are:
         hexes: list, required, a list of 19 Hex objects
@@ -21,7 +21,7 @@ class HexFlower():
     Methods:
         proximity: Cartesian distance between a point and the center of each
                    Hex object, returns a list of tuples sorted by proximity
-                   tuples are (distance to Hex, Hex.number)
+                   tuples are (distance to Hex, Hex.id)
         drawHexFlower: this method draws the Hex Flower on the supplied 
                    canvas, using the attributes already designated in the
                    HF attributes and Hex attributes
@@ -35,7 +35,7 @@ class HexFlower():
             for hex in hexes:
                 if isinstance(hex, Hex):
                     raise TypeError("HexFlower cannot import lists of non-Hex objects.")
-                if hex.number == i:
+                if hex.id == i:
                     self.extend(hex)
                 else:
                     continue
@@ -79,7 +79,7 @@ class HexFlower():
     def proximity(self, point: tuple, diagnostic=False):
         """
         This method determines if a point is contained in any Hex object
-        contained in this HexFlower. Returns either None or Hex.number.
+        contained in this HexFlower. Returns either None or Hex.id.
         """
         def prox(point, center):
             x1, x2 = point
@@ -97,7 +97,7 @@ class HexFlower():
         if len(close_hexes ) == 0:
             return None
         elif len(close_hexes) == 1:
-            return close_hexes[0].number
+            return close_hexes[0].id
         else: # More than one are very close. Point is inside the HF.
             closest = close_hexes[0]
             counter = 0
@@ -111,7 +111,7 @@ class HexFlower():
                 counter += 1
                 if diagnostic:
                     print(f"End loop: Closest: {closest}, counter: {counter}")
-            return closest.number
+            return closest.id
 
     def drawHexFlower(self, canvas: tk.Canvas,
                       width=3, diagnostic=False):
@@ -162,7 +162,7 @@ class Zone():
     Zone have the following attributes: 
         type: str, required, default is 'normal',
         color: str, required, no default
-        label: str, required, no default, but it is often str(Hex.number)
+        label: str, required, no default, but it is often str(Hex.id)
         icon: str, optional, str is the relative path and filename of the icon
                to be displayed in this Hex when the Hex Flower is drawn,
                default is None
@@ -196,7 +196,7 @@ class Zone():
 class Hex():
     """
     This class requires a dictionary of values of the following form:
-        number: int, , required, number of the hex (1-19)
+        id: int, , required, number of the hex (1-19)
         vertex: tuple (x, y), required, coordinates of the left lower corner
                     on the tk.Canvas for this hex to appear.
         zone Zone, required, describes threat level of this section
@@ -227,19 +227,19 @@ class Hex():
                     has an optional side length for the side of the hex when
                     printed on the canvas
     """
-    def __init__(self, number: int, vertex: tuple, label: str,
+    def __init__(self, id: int, vertex: tuple, label: str,
                  adjacency: dict,  type='normal',
                  color=None, icon=None, effect=None,
                  diagnostic=False):
-        self.number = number
+        self.id = id
         x,y = vertex
         if (isinstance(x, int) or isinstance(x, float)) and \
             (isinstance(y, int) or isinstance(y, float)):
             self.vertex = vertex
         else:
-            raise TypeError("Vertex coordinates must be a numbers")
+            raise TypeError("Vertex coordinates must be a ids")
         if label is None:
-            label = str(self.number)
+            label = str(self.id)
         self.zone = Zone(color=color, label=label, type=type, 
                          icon=icon, effect=effect)
         if isinstance(adjacency, dict):
@@ -247,15 +247,14 @@ class Hex():
                 if isinstance(adjacency[k], int) or adjacency[k] is None:
                     self.adjacency[k] = adjacency[k]
                 else:
-                    raise ValueError("Adjacency values must Hex ID (int) or None.")
+                    raise ValueError("Adjacency values must be a Hex ID (int) or None.")
         else:
             raise ValueError("Adjacency keys must be a, b, c, d, e, or f.")
         if diagnostic:
             print(self)
 
     def __str__(self):
-        s = "Hex with attributes: number = {}, vertex = {}\n".format(self.number, 
-                                                                     self.vertex)
+        s = "Hex with attributes: id = {}, vertex = {}\n".format(self.id, self.vertex)
         s = s + "label = {}, color = {}, icon = {}\n".format(self.label,
                                                              self.color,
                                                              self.icon)
