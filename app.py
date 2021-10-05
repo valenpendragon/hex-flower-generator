@@ -8,5 +8,8 @@ tree = ElementTree.parse("./data/basic_hex_flower.xml")
 print(f"Printing ElementTree: {tree}")
 root = tree.getroot()
 print(f"Printing root: {root}")
-xmldata = xml2dict(root)
-print(f"Printing xmldata: {xmldata}")
+flowerdata = xml2dict(root)
+print(f"Printing xmldata: {flowerdata}")
+# Now, we have a dictionary we can parse to pull our Hex and HF attributes
+# and data from. All attributes have an @name to separate them from actual
+# dictionaries as attributes.
