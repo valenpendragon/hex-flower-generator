@@ -33,10 +33,10 @@ class HexFlower():
         self.hexes = []
         for i in range(1, 20):
             for hex in hexes:
-                if isinstance(hex, Hex):
+                if not isinstance(hex, Hex):
                     raise TypeError("HexFlower cannot import lists of non-Hex objects.")
                 if hex.id == i:
-                    self.extend(hex)
+                    self.hexes.append(hex)
                 else:
                     continue
         self.type = type
@@ -66,11 +66,12 @@ class HexFlower():
             raise TypeError("Height must be an integer for tk.Canvas objects.")
         if diagnostic:
             print("HexFlower initialized")
+            print(self)
 
     def __str__(self) -> str:
-        s = ''
-        for i in range(19):
-            s = s + 'Hex: {}'.format(self[i].__str__())
+        s = "HexFlower with attributes: type = {}, dice = {},\n".format(self.type, self.dice)
+        s = s + "side = {}, canvas height = {}, ".format(self.side, self.canvas_height)
+        s = s + "canvas width = {},\nand hexes = {}.".format(self.canvas_width, self.hexes)
         return s
 
     def __repr__(self) -> str:
@@ -128,7 +129,10 @@ class HexFlower():
         if diagnostic:
             print(f"drawHexFlower: Arguments received: {locals()}")
             print(f"Hex Flower status: {self}")
-        # We need a list of labels.
+        # Initializing the variables we need.
+        s = self.side
+        b = s * math.cos(math.pi / 3)
+        h = s * math.sin(math.pi / 3)
         labels = []
         ctr = 0
         for hex in self.hexes:
@@ -155,9 +159,9 @@ class HexFlower():
                                   width=width)
             if hex.zone.icon:
                 icon = tk.PhotoImage(file=hex.zone.icon)
-                labels[ctr].extend(tk.Label(canvas, image=icon))
+                labels.append(tk.Label(canvas, image=icon))
             else:
-                labels[ctr].extend(tk.Label(canvas, text=hex.zone.label))
+                labels.append(tk.Label(canvas, text=hex.zone.label))
             labels[ctr].place(x=x_c, y=y_c, anchor=tk.CENTER)
             ctr += 1
 

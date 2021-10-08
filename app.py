@@ -4,9 +4,16 @@ from xml.etree import cElementTree as ElementTree
 import sys
 from lib.xml_to_dict import xml2dict, etree_to_dict
 
-def process_xml_hex_flower(xmlfile, diagnostic=False):
+def process_xml_hex_flower(xmlfile, diagnostic=False, side=20,
+                           canvas_width=300, canvas_height=300) -> HexFlower:
     """
-    This function takes an xml file and returns a HexFlower object.
+    This function takes an xml file and returns a HexFlower object. The other
+    arguments are optional. These are:
+        side: float or int, length of a hex edge
+        canvas_width: int, width of the tk.Canvas
+        canvas_height: int, height of the tk.Canvas
+        diagnostic: bool, whether or not to generate diagnostic messages while 
+            running
     """
     def str_to_tuple(s: str, f):
         """
@@ -100,9 +107,29 @@ def process_xml_hex_flower(xmlfile, diagnostic=False):
         if diagnostic:
             print(f"Created new hex: type: {type(new_hex)}: {new_hex}")
             print(f"Hex list is now: {hexes}")
+    # Hexes have been assembled. We are ready to make a Hex Flower.
+    return HexFlower(hexes=hexes, type=hftype, dice=hfdice, side=side,
+                     height=canvas_height, width=canvas_width,
+                     diagnostic=diagnostic)
 
+# Setting default values. This should be changed at some point to allow the
+# user to decide what to use instead.
+canvas_width = 300
+canvas_height = 300
+side = 20
+diagnostic = True
+xmlfile = "./data/basic_hex_flower.xml"
+rows = 2
+cols = 2
 
 # This is a temporary declaration. It will be replaced by a menu
 # system for picking the HexFlower xml file.
-xmlfile = "./data/basic_hex_flower.xml"
-process_xml_hex_flower(xmlfile, diagnostic=True)
+hf = process_xml_hex_flower(xmlfile=xmlfile, canvas_width=canvas_width,
+                            canvas_height=canvas_height, side=side,
+                            diagnostic=diagnostic)
+
+root = tk.Tk()
+canvas = tk.Canvas(root, width=canvas_width, height=canvas_height)
+canvas.grid(row=0, column=0)
+board = hf.drawHexFlower(canvas, diagnostic=diagnostic)
+tk.mainloop()
