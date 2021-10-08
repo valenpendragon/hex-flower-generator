@@ -12,7 +12,7 @@
         </adjacency>
 	</hex>
     <hex id="2" vertex="(82,15)">
-        <zone type="normal" label="2" icon="null" color="grey" effect="null"></zone>
+        <zone type="normal" label="2" icon="null" color="gray50" effect="null"></zone>
         <adjacency>
             <a>7</a>
             <b>5</b>
@@ -23,7 +23,7 @@
         </adjacency>        
     </hex>
     <hex id="3" vertex="(194,15)">
-        <zone type="normal" label="3" icon="null" color="grey" effect="null"></zone>
+        <zone type="normal" label="3" icon="null" color="gray50" effect="null"></zone>
         <adjacency>
             <a>8</a>
             <b>6</b>
@@ -34,7 +34,7 @@
         </adjacency>        
     </hex>
     <hex id="4" vertex="(26,30)">
-        <zone type="normal" label="4" icon="null" color="grey" effect="null"></zone>
+        <zone type="normal" label="4" icon="null" color="gray50" effect="null"></zone>
         <adjacency>
             <a>9</a>
             <b>7</b>
@@ -45,7 +45,7 @@
         </adjacency>        
     </hex>
     <hex id="5" vertex="(138,30)">
-        <zone type="normal" label="5" icon="null" color="grey" effect="null"></zone>
+        <zone type="normal" label="5" icon="null" color="gray50" effect="null"></zone>
         <adjacency>
             <a>10</a>
             <b>8</b>
@@ -56,7 +56,7 @@
         </adjacency>
     </hex>
     <hex id="6" vertex="(250,30)">
-        <zone type="normal" label="6" icon="null" color="grey" effect="null"></zone>
+        <zone type="normal" label="6" icon="null" color="gray50" effect="null"></zone>
         <adjacency>
             <a>11</a>
             <b>1</b>
@@ -67,7 +67,7 @@
         </adjacency>        
     </hex>
     <hex id="7" vertex="(82,45)">
-        <zone type="normal" label="7" icon="null" color="grey" effect="null"></zone>
+        <zone type="normal" label="7" icon="null" color="gray50" effect="null"></zone>
         <adjacency>
             <a>12</a>
             <b>10</b>
@@ -78,7 +78,7 @@
         </adjacency>        
     </hex>
     <hex id="8" vertex="(194,45)">
-        <zone type="normal" label="8" icon="null" color="grey" effect="null"></zone>
+        <zone type="normal" label="8" icon="null" color="gray50" effect="null"></zone>
         <adjacency>
             <a>13</a>
             <b>11</b>
@@ -100,7 +100,7 @@
         </adjacency>        
     </hex>
     <hex id="10" vertex="(138,60)">
-        <zone type="normal" label="10" icon="null" color="grey" effect="null"></zone>
+        <zone type="normal" label="10" icon="null" color="gray50" effect="null"></zone>
         <adjacency>
             <a>15</a>
             <b>13</b>
@@ -177,7 +177,7 @@
         </adjacency>        
     </hex>
     <hex id="17" vertex="(82,105)">
-        <zone type="severe" llabel="17" icon="null" color="yellow" effect="null"></zone>
+        <zone type="severe" label="17" icon="null" color="yellow" effect="null"></zone>
         <adjacency>
             <a>2</a>
             <b>19</b>

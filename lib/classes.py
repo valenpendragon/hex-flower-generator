@@ -74,7 +74,11 @@ class HexFlower():
         return s
 
     def __repr__(self) -> str:
-        pass
+        s = "HexFlower(hexes={}, type={}, ".format(self.hexes, self.type)
+        s = s + "dice={}, side={}, ".format(self.dice, self.side)
+        s = s + "canvas_height={}, ".format(self.canvas_height)
+        s = s + "canvas_width={})".format(self.canvas_width)
+        return s
     
     def proximity(self, point: tuple, diagnostic=False):
         """
@@ -171,7 +175,8 @@ class Zone():
     If the icon is None, the label will be displayed instead of an icon.
     """
     def __init__(self, color: str, label:str,
-                 type='normal', icon=None, effect=None):
+                 type='normal', icon=None, effect=None,
+                 diagnostic=False):
         self.type = type
         self.label = str(label)
         # Checking to see if color value set is valid.
@@ -183,23 +188,35 @@ class Zone():
                                         'X', 'rgb.txt')
                 rgb_db = ColorDB.get_colordb(rgb_file)
                 colors = [x.lower().replace(' ', '') for x in rgb_db.unique_names()]
+                if diagnostic:
+                    print(f"Colors are {colors}")
                 if color not in colors:
-                    raise ValueError("String is not a valid color for Python or tkinter")
+                    raise ValueError(f"String '{color}' is not a valid color for Python or tkinter")
                 else:
                     self.color = color
             else:
                 raise ValueError("color must be a string for a valid color for Python or tkinter")
         self.icon = icon
         self.effect = effect
-        
+    
+    def __str__(self) -> str:
+        s = "Zone with attributes: type: {}, color: {}, label: {}, icon: {}, effect: {}. ".format(
+            self.type, self.color, self.label, self.icon, self.effect
+        )
+        return s
+    
+    def __repr__(self) -> str:
+        s = "Zone(color={}. label={}, type={}, ".format(self.color, self.label, self.type)
+        s = s + "icon={}, effect={})".format(self.icon, self.effect)
+        return s
 
 class Hex():
     """
     This class requires a dictionary of values of the following form:
-        id: int, , required, number of the hex (1-19)
+        id: int, required, number of the hex (1-19)
         vertex: tuple (x, y), required, coordinates of the left lower corner
                     on the tk.Canvas for this hex to appear.
-        zone Zone, required, describes threat level of this section
+        zone: Zone, required, describes threat level of this section
                     of the Hex Flower, may alter the color of the Hex fill,
                     also has its own attributes:
             type: str, required, it is severity of this zone in a word,
@@ -241,8 +258,9 @@ class Hex():
         if label is None:
             label = str(self.id)
         self.zone = Zone(color=color, label=label, type=type, 
-                         icon=icon, effect=effect)
+                         icon=icon, effect=effect, diagnostic=diagnostic)
         if isinstance(adjacency, dict):
+            self.adjacency = {}
             for k in {'a', 'b', 'c', 'd', 'e', 'f'}:
                 if isinstance(adjacency[k], int) or adjacency[k] is None:
                     self.adjacency[k] = adjacency[k]
@@ -251,18 +269,19 @@ class Hex():
         else:
             raise ValueError("Adjacency keys must be a, b, c, d, e, or f.")
         if diagnostic:
-            print(self)
+            print(f"Initialized Hex: {self}")
 
     def __str__(self):
         s = "Hex with attributes: id = {}, vertex = {}\n".format(self.id, self.vertex)
-        s = s + "label = {}, color = {}, icon = {}\n".format(self.label,
-                                                             self.color,
-                                                             self.icon)
-        s = s + "Adjency: {" + ",".join() + "}"
+        s = s + self.zone.__str__() + "\n"
+        s = s + "Adjacency: {}".format(self.adjacency)
         return s
 
     def __repr__(self):
-        pass
+        s = "Hex(id={}, vertex={}, label={}, ".format(self.id, self.vertex, self.zone.label)
+        s = s + "type={}, color={}, icon={}, ".format(self.zone.type, self.zone.color, self.zone.icon)
+        s = s + "effect={}, adjacency={})".format(self.zone.effect, self.adjacency)
+        return s
 
     def center(self, side=20, diagnostic=False):
         """
