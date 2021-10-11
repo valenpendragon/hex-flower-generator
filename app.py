@@ -116,7 +116,7 @@ def process_xml_hex_flower(xmlfile, diagnostic=False, side=20,
 # user to decide what to use instead.
 canvas_width = 300
 canvas_height = 300
-side = 20
+side = 25
 diagnostic = True
 xmlfile = "./data/basic_hex_flower.xml"
 rows = 2
@@ -131,5 +131,5 @@ hf = process_xml_hex_flower(xmlfile=xmlfile, canvas_width=canvas_width,
 root = tk.Tk()
 canvas = tk.Canvas(root, width=canvas_width, height=canvas_height)
 canvas.grid(row=0, column=0)
-board = hf.drawHexFlower(canvas, diagnostic=diagnostic)
+board = hf.drawHexFlower(canvas, diagnostic=diagnostic, width=3)
 tk.mainloop()
