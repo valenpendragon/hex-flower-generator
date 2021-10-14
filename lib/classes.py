@@ -19,9 +19,9 @@ class HexFlower():
         canvas_width: integer, optional, the tk.Canvas width, default=300
      
     Methods:
-        proximity: Cartesian distance between a point and the center of each
-                   Hex object, returns a list of tuples sorted by proximity
-                   tuples are (distance to Hex, Hex.id)
+        proximity: finds the hex.id for the Hex containing the coordinates
+            supplies as a argument, returns hex.id or None if outside the
+            HF.
         drawHexFlower: this method draws the Hex Flower on the supplied 
                    canvas, using the attributes already designated in the
                    HF attributes and Hex attributes
