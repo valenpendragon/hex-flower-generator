@@ -10,7 +10,12 @@ class HexFlower():
     order of the Hex.id value. They need to be numbered 1 through 19
     in the Hex.id attribute.
 
-    Class Attributes are:
+    Class Attributes:
+        hfcols: 5, the number of columns of Hexes in the HF
+        hfcolumns: dict, placement of Hexes by Hex.id in the HF,
+            None indicates an empty spot
+    
+    Instance Attributes:
         hexes: list, required, a list of 19 Hex objects
         type: str, required, indicates the type of Hex Flower
         dice: tuple of str, optional, default is ('d6', 'd6')
@@ -26,6 +31,19 @@ class HexFlower():
                    canvas, using the attributes already designated in the
                    HF attributes and Hex attributes
     """
+    # Here are the constants for every Hex Flower. The dictionary lays
+    # out the Hexes stacked in each column. Note, this is tkinter. So, the
+    # order has to be reversed because the y-axis is increased as it moves
+    # down.
+    hfcols = 5
+    hfcolumns = {
+        0: [None, 14, 9, 4, None],
+        1: [17, 12, 7, 2],
+        2: [19, 15, 10, 5, 1],
+        3: [18, 13, 8, 3],
+        4: [None, 16, 11, 6, None]
+    }
+
     def __init__(self, hexes, type: str, 
                  dice=('d6', 'd6'), side=20.0, 
                  height=300, width=300,                  
@@ -64,6 +82,20 @@ class HexFlower():
             self.canvas_width = width
         else:
             raise TypeError("Height must be an integer for tk.Canvas objects.")
+        # Building the correct vertices.
+        h = round(self.side * math.sin(math.pi / 3), 2)
+        b = round(self.side * math.cos(math.pi / 3), 2)
+        for i in range(self.hfcols):
+            x = round(((i + 1) * b) + (i * self.side), 2)
+            h_adj = h * (i % 2)
+            stack_height = len(self.hfcolumns[i])
+            for n in range(stack_height):
+                hex_id = self.hfcolumns[i][n] 
+                y = round((h_adj + (n * 2 * h)), 2)          
+                if hex_id is not None:
+                    self.hexes[hex_id - 1].vertex = (x, y)
+                    if diagnostic:
+                        print(f"New Hex is {self.hexes[hex_id - 1]}")
         if diagnostic:
             print("HexFlower initialized")
             print(self)
