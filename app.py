@@ -128,7 +128,7 @@ cols = 2
 root = CP()
 # This is a temporary declaration. It will be replaced by a menu
 # system for picking the HexFlower xml file.
-xmlfile = root.callback()
+xmlfile = root.openfile()
 hf = process_xml_hex_flower(xmlfile=xmlfile, canvas_width=canvas_width,
                             canvas_height=canvas_height, side=side,
                             diagnostic=diagnostic)
