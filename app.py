@@ -114,9 +114,9 @@ def process_xml_hex_flower(xmlfile, diagnostic=False, side=20,
 
 # Setting default values. This should be changed at some point to allow the
 # user to decide what to use instead.
-canvas_width = 300
-canvas_height = 300
-side = 25
+canvas_width = 400
+canvas_height = 400
+side = 40
 diagnostic = True
 xmlfile = "./data/basic_hex_flower.xml"
 rows = 2
