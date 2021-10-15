@@ -1,5 +1,8 @@
 import tkinter as tk
+from tkinter import ttk
 from lib.classes import Hex, HexFlower, Zone
+from lib.tkinter_classes import ControlPanel as CP
+from lib.tkinter_classes import BoardWindow as BW
 from xml.etree import cElementTree as ElementTree
 import sys
 from lib.xml_to_dict import xml2dict, etree_to_dict
@@ -122,14 +125,26 @@ xmlfile = "./data/basic_hex_flower.xml"
 rows = 2
 cols = 2
 
+root = CP()
 # This is a temporary declaration. It will be replaced by a menu
 # system for picking the HexFlower xml file.
+xmlfile = root.callback()
 hf = process_xml_hex_flower(xmlfile=xmlfile, canvas_width=canvas_width,
                             canvas_height=canvas_height, side=side,
                             diagnostic=diagnostic)
-
-root = tk.Tk()
-canvas = tk.Canvas(root, width=canvas_width, height=canvas_height)
+board = BW(root)
+canvas = tk.Canvas(board, width=canvas_width, height=canvas_height)
 canvas.grid(row=0, column=0)
-board = hf.drawHexFlower(canvas, diagnostic=diagnostic, width=3)
+
+ttk.Button(board,
+           text='Close',
+           command=board.destroy).place(x=0, y=375)
+ttk.Button(board,
+           text='Start Walk',
+           command=print).place(x=100, y=375)
+ttk.Button(board,
+           text='Stop Walk',
+           command=print).place(x=200, y=375)
+
+hf.drawHexFlower(canvas, diagnostic=diagnostic, width=3)
 tk.mainloop()
