@@ -1,10 +1,11 @@
 import tkinter as tk
 from tkinter import ttk
-from lib.classes import Hex, HexFlower, Zone
+from lib.classes import Hex, HexFlower, Zone, BasicWalk
 from lib.tkinter_classes import ControlPanel as CP
+from lib.tkinter_classes import WalkOutputWindow as WOW
 from lib.tkinter_classes import BoardWindow as BW
 from xml.etree import cElementTree as ElementTree
-import sys
+import sys, random, time
 from lib.xml_to_dict import xml2dict, etree_to_dict
 
 def process_xml_hex_flower(xmlfile, diagnostic=False, side=20,
@@ -115,6 +116,18 @@ def process_xml_hex_flower(xmlfile, diagnostic=False, side=20,
                      height=canvas_height, width=canvas_width,
                      diagnostic=diagnostic)
 
+def end_walk():
+    pass
+
+def initiate_walk():
+    walk_canvas = WOW(canvas)
+    walk = BasicWalk(hf=hf, start=start, moves=walk_length, diagnostic=diagnostic)
+    for i in range(walk_length):
+        time.sleep(3)
+        walk.completeMove(walk_canvas, diagnostic=diagnostic,
+                          output_file=walk_output_file)
+    
+
 # Setting default values. This should be changed at some point to allow the
 # user to decide what to use instead.
 canvas_width = 400
@@ -122,13 +135,19 @@ canvas_height = 400
 side = 40
 diagnostic = True
 xmlfile = "./data/basic_hex_flower.xml"
+walk_length = 15
 rows = 2
 cols = 2
+# Considering making this random.randint(1, 10). This is the starting hex for
+# the walk.
+start = 1
+walk_output_file = "./output/walk_resulfs.csv"
 
 root = CP()
 # This is a temporary declaration. It will be replaced by a menu
 # system for picking the HexFlower xml file.
 xmlfile = root.openfile()
+global hf
 hf = process_xml_hex_flower(xmlfile=xmlfile, canvas_width=canvas_width,
                             canvas_height=canvas_height, side=side,
                             diagnostic=diagnostic)
@@ -141,10 +160,10 @@ ttk.Button(board,
            command=board.destroy).place(x=0, y=375)
 ttk.Button(board,
            text='Start Walk',
-           command=print).place(x=100, y=375)
+           command=initiate_walk).place(x=100, y=375)
 ttk.Button(board,
            text='Stop Walk',
-           command=print).place(x=200, y=375)
+           command=end_walk).place(x=200, y=375)
 
 hf.drawHexFlower(canvas, diagnostic=diagnostic, width=3)
 tk.mainloop()

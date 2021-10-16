@@ -15,9 +15,11 @@ class ControlPanel(tk.Tk):
         filemenu.add_command(label="Open...", command=self.openfile)
         filemenu.add_separator()
         filemenu.add_command(label='Exit', command=sys.exit)
-        helpmenu = tk.Menu(menu)
-        menu.add_cascade(label='Help', menu=helpmenu)
-        helpmenu.add_command(label="About...", command=self.about)
+        # Commented out the Help Menu until I can figure out how to make the
+        # program use the menu to open a file.
+        #helpmenu = tk.Menu(menu)
+        #menu.add_cascade(label='Help', menu=helpmenu)
+        #helpmenu.add_command(label="About...", command=self.about)
         
     def openfile(self):
         name = fd.askopenfilename()
@@ -29,12 +31,15 @@ class ControlPanel(tk.Tk):
                    text='File Open',
                    command=self.callback).grid(row=0, column=0)
         
-    def callback(self):
-        name = fd.askopenfilename()
-        return name
 
 class BoardWindow(tk.Toplevel):
     def __init__(self, parent):
         super().__init__(parent)
         self.geometry("400x400+10+10")
         self.title("Hex Flower")
+
+class WalkOutputWindow(tk.Toplevel):
+    def __init__(self, parent):
+        super().__init__(parent)
+        self.geometry("400x400")
+        self.title("Walk Output")

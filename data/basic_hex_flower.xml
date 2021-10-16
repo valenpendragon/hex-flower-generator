@@ -100,7 +100,7 @@
         </adjacency>        
     </hex>
     <hex id="10" vertex="(138,60)">
-        <zone type="normal" label="10" icon="null" color="gray50" effect="null"></zone>
+        <zone type="special" label="10" icon="null" color="gray50" effect="null"></zone>
         <adjacency>
             <a>15</a>
             <b>13</b>

@@ -1,8 +1,6 @@
 import tkinter as tk
 from Tools.pynche import ColorDB
-import os
-import colorsys
-import math
+import os, colorsys, math, random, csv, copy
 
 class HexFlower():
     """
@@ -329,3 +327,157 @@ class Hex():
         if diagnostic:
             print(f"Center of hex is: ({c_x},{c_y})")
         return (c_x, c_y)
+
+class BasicWalk():
+    """
+    This class is contains three types of standard walks. They depend on the dice
+    types required. The 'standardbias' type uses 2d6, the 'southbias' 3d4, and the 
+    'special' d6+d8. The choice is determined by the dice the Hex Flower object
+    requires. The result 'tables' are dictionaries.
+
+    It will make a move every 3 seconds until the walk ends. This is not a the
+    class for walks that have to find an ending hex. Hitting the stop walk button
+    will also stop the walk.
+
+    Class Attributes:
+        standardbias: dict, specific moves for 2d6 bias (most moves are b-e).
+        southbias: dict, specific moves for 3d4 bias (most move are c, d, or e).
+        special: dict, specific moves for d6+d8 (most moves are stay or c, d, e).
+        correct_dice: list, tuples of dice combinations usable for this Walk
+        correct_types: list, the types of Hex Flowers that this walk will accept
+    
+    Instance Attributes:
+        hf: HexFlower, the HF supplied in the arguments
+        last_move: int, number of the final move
+        current_move: int, move counter for the walk, since it can be paused
+        current_hex: int, hex_id of the current move
+        moves: list of tuples of the form (hex_id, zone.type, zone.effect)
+        outcomes: dict, picked from the Class Attributes based on hf.dice
+    
+    Methods:
+        completeMove: executes a move and updates the canvas supplied as an argument.
+    """
+    standardbias = {
+        2: 'b', 3: 'b',  4: 'c',  5: 'c',  6: 'd', 7: 'd',
+        8: 'e', 9: 'e', 10: 'f', 11: 'f', 12: 'a'}
+    southbias = {
+        3: 'b', 4: 'b',  5: 'c',  6: 'c', 7: 'd',
+        8: 'e', 9: 'e', 10: 'f', 11: 'f', 12: 'a'}
+    special = {
+        2: 'a',   3: 'b',  4: 'b',  5: 'c',  6: 'c', 7: 'd', 8: '8',
+        9: None, 10: 'e', 11: 'e', 12: 'f', 13: 'f', 14: 'a'}
+    correct_dice = [('d6','d6'), ('d4', 'd4', 'd4'), ('d6', 'd8')]
+    correct_types = ['normal', 'basic']
+    
+    def __init__(self, hf, start: int, moves: int, diagnostic=False):
+        """
+        Each walk requires hex id (int) of the starting hex and number of moves for
+        this walk. There must be a finite number for this type of walk. It also
+        requires a hex flower object, which it uses to gather information. The
+        type of Hex Flower must be basic or normal to use this Walk.
+        """
+        # Checking the arguments provided.
+        if not isinstance(hf, HexFlower):
+            raise ValueError("You must supply a Hex Flower object")
+        if not isinstance(start, int):
+            raise ValueError("Starting hex id must be an integer")
+        elif start not in range(1, 20):
+            raise ValueError("Start must a valid hex id (integer [1, 19])")
+        if not isinstance(moves, int):
+            raise ValueError("The nubmer of moves must be an integer")
+        if hf.dice in self.correct_dice:
+            self.outcomes = self._init_dice(hf)
+        else:
+            raise ValueError(f"Dice of type {hf.dice} are not valid for Basic Walks")
+        if hf.type not in self.correct_types:
+            raise ValueError(f"Basic walks are not valid for {hf.type} of hex flower")
+        # Setting attributes for this basic walk.
+        self.hf = copy.deepcopy(hf)
+        self.last_move = moves
+        self.current_move = 0
+        self.current_hex = start
+        self.moves = []
+        zone = self.hf.hexes[start - 1].zone.type
+        effect = self.hf.hexes[start - 1].zone.effect
+        self.moves.append((start, zone, effect))
+        if diagnostic:
+            print(f"Basic Walk initialized as {self}")
+    
+    def _init_dice(self, hf) -> dict:
+        """
+        This internal method returns the dictionary corresponding to the dice
+        specified by the HF.dice attribute.
+        """
+        if hf.dice == ('d6','d6'):
+            return self.standardbias
+        elif hf.dice == ('d4', 'd4', 'd4'):
+            return self.southbias
+        elif hf.dice == ('d6', 'd8'):
+            return self.special
+        
+    def __repr__(self) -> str:
+        return f"BasicWalk(hf={self.hf}, start={self.moves[0]}, moves={self.last_move})"
+    
+    def __str__(self):
+        s = "Basic Walk using Hex Flower {}\n".format(self.hf)
+        s = s + "Total Moves: {}, Current Move: {}, ".format(self.last_move, self.current_move)
+        s = s + "Current Hex: {}\n".format(self.current_hex)
+        s = s + "Moves thus far: {}".format(self.moves)
+        return s
+
+    def completeMove(self, canvas: tk.Canvas, 
+                     diagnostic=False,
+                     output_file="./output/basic_walk_output.csv") -> None:
+        """
+        This method performs a move and updates that canvas label with the outcome
+        It requires a tkinter.Canvas to write the data to.
+        """
+        self.current_move += 1
+        if diagnostic:
+            print(f"Current move is #{self.current_move} from hex {self.current_hex}.")
+        if self.current_move > self.last_move:
+            print("Moves are already complete")
+            return
+        roll = 0
+        if len(self.hf.dice) == 2:
+            roll += random.randint(1,6)
+            if self.hf.dice[1] == 'd6':
+                roll += random.randint(1,6)
+            else: # Second die is d8
+                roll += random.randint(1,8)
+        else: # Dice are 3d4
+            for i in range(3):
+                roll += random.randint(1,4)
+        
+        adjacency = self.hf.hexes[self.current_hex - 1].adjacency
+        if diagnostic:
+            print(f"Rolled {roll} using {self.hf.dice}.")
+            print(f"Checking adjacency for {self.current_hex}.")
+            print(f"Adjacency is {adjacency}.")
+            print(f"Roll produced {self.outcomes[roll]} result")
+
+        if self.outcomes[roll] is None:
+            new_hex = None
+        else:
+            new_hex = adjacency[self.outcomes[roll]]
+        if new_hex is None:
+            if diagnostic:
+                print(f"New move is blocked. Staying in hex {self.current_hex}")
+            new_hex = self.current_hex
+            self.moves.append(self.moves[-1])
+        else:
+            self.current_hex = new_hex
+        zone = self.hf.hexes[new_hex - 1].zone.type
+        effect = self.hf.hexes[new_hex - 1].zone.effect
+        self.moves.append((new_hex, zone, effect))
+        if diagnostic:
+            print(f"Move is to ({new_hex}, {zone}, {effect})")
+            
+        # Now, we write the moves to the canvas.
+        
+        #label = tk.Label(canvas, )
+        with open(output_file, 'a+') as myfile:
+            writer = csv.writer(myfile, delimiter=",")
+            writer.writerow(self.moves[-1])
+            if diagnostic:
+                print(f"Move written to {output_file}")
