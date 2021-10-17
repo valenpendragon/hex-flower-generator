@@ -26,8 +26,8 @@ class HexFlower():
             supplies as a argument, returns hex.id or None if outside the
             HF.
         drawHexFlower: this method draws the Hex Flower on the supplied 
-                   canvas, using the attributes already designated in the
-                   HF attributes and Hex attributes
+            canvas, using the attributes already designated in the HF attributes
+            and Hex attributes
     """
     # Here are the constants for every Hex Flower. The dictionary lays
     # out the Hexes stacked in each column. Note, this is tkinter. So, the
@@ -56,14 +56,13 @@ class HexFlower():
                 else:
                     continue
         self.type = type
-        if len(dice) > 3 or len(dice) < 1 or dice is None:
+        if len(dice) > 3 or len(dice) <= 1 or dice is None:
             raise ValueError("Improper number of dice specified. Must 1, 2 or 3")
         else:
             # Checking to make sure the dice are specified correctly, They need
             # span 1-6 (d6), 1-8 (d8), 2-12 (2d6), 3-12 (3d4), or 2-14 (d6 + d8).
-            dice_options = [
-                ('d6'), ('d8'), ('d6', 'd6'), ('d4','d4', 'd4'), ('d6','d8')
-            ]
+            dice_options = [('d6', None), (None, 'd8'), ('d6','d6'),
+                            ('d4', 'd4', 'd4'), ('d6', 'd8')]
             if dice not in dice_options:
                 raise ValueError(f"{dice} is not a valid option. Dice must be {dice_options}.")
             else:
@@ -339,7 +338,13 @@ class BasicWalk():
     class for walks that have to find an ending hex. Hitting the stop walk button
     will also stop the walk.
 
+    Note: Self-terminating walks are not basic walks. Technically, Basic Walks
+    are infinite walks that we stop after several iterations.
+
     Class Attributes:
+        uniformbias: dict, specifies moves for a 1d6 uniform bias situation.
+        nuniformbias: dict, specifies moves for a 1d8 uniform bias that uses 7
+            8 as blocked moves.
         standardbias: dict, specific moves for 2d6 bias (most moves are b-e).
         southbias: dict, specific moves for 3d4 bias (most move are c, d, or e).
         special: dict, specific moves for d6+d8 (most moves are stay or c, d, e).
@@ -357,6 +362,10 @@ class BasicWalk():
     Methods:
         completeMove: executes a move and updates the canvas supplied as an argument.
     """
+    uniformbias = {
+        1: 'a', 2: 'b', 3: 'c', 4: 'd', 5: 'e', 6: 'f'}
+    nuniformbias = {
+        1: 'a', 2: 'b', 3: 'c', 4: 'd', 5: 'e', 6: 'f', 7: None, 8: None}
     standardbias = {
         2: 'b', 3: 'b',  4: 'c',  5: 'c',  6: 'd', 7: 'd',
         8: 'e', 9: 'e', 10: 'f', 11: 'f', 12: 'a'}
@@ -366,7 +375,8 @@ class BasicWalk():
     special = {
         2: 'a',   3: 'b',  4: 'b',  5: 'c',  6: 'c', 7: 'd', 8: '8',
         9: None, 10: 'e', 11: 'e', 12: 'f', 13: 'f', 14: 'a'}
-    correct_dice = [('d6','d6'), ('d4', 'd4', 'd4'), ('d6', 'd8')]
+    correct_dice = [('d6', None), (None, 'd8'), ('d6','d6'),
+                    ('d4', 'd4', 'd4'), ('d6', 'd8')]
     correct_types = ['normal', 'basic']
     
     def __init__(self, hf, start: int, moves: int, diagnostic=False):
@@ -408,13 +418,19 @@ class BasicWalk():
         This internal method returns the dictionary corresponding to the dice
         specified by the HF.dice attribute.
         """
-        if hf.dice == ('d6','d6'):
+        if hf.dice == ('d6', None):
+            return self.uniformbias
+        elif hf.dice == (None, 'd8'):
+            return self.nuniformbias
+        elif hf.dice == ('d6','d6'):
             return self.standardbias
         elif hf.dice == ('d4', 'd4', 'd4'):
             return self.southbias
         elif hf.dice == ('d6', 'd8'):
             return self.special
-        
+        else:
+            raise ValueError(f"{hf.dice} is not a valid type for Basic Walks.")
+         
     def __repr__(self) -> str:
         return f"BasicWalk(hf={self.hf}, start={self.moves[0]}, moves={self.last_move})"
     
@@ -439,23 +455,18 @@ class BasicWalk():
             print("Moves are already complete")
             return
         roll = 0
-        if len(self.hf.dice) == 2:
-            roll += random.randint(1,6)
-            if self.hf.dice[1] == 'd6':
-                roll += random.randint(1,6)
-            else: # Second die is d8
-                roll += random.randint(1,8)
-        else: # Dice are 3d4
-            for i in range(3):
+        for i in range(len(self.hf.dice)):
+            if self.hf.dice[i] == 'd4':
                 roll += random.randint(1,4)
-        
-        adjacency = self.hf.hexes[self.current_hex - 1].adjacency
+            elif self.hf.dice[i] == 'd6':
+                roll += random.randint(1,6)
+            elif self.hf.dice[i] == 'd8':
+                roll += random.randint(1,8)
         if diagnostic:
             print(f"Rolled {roll} using {self.hf.dice}.")
-            print(f"Checking adjacency for {self.current_hex}.")
-            print(f"Adjacency is {adjacency}.")
-            print(f"Roll produced {self.outcomes[roll]} result")
-
+            
+        adjacency = self.hf.hexes[self.current_hex - 1].adjacency
+        
         if self.outcomes[roll] is None:
             new_hex = None
         else:
@@ -471,11 +482,25 @@ class BasicWalk():
         effect = self.hf.hexes[new_hex - 1].zone.effect
         self.moves.append((new_hex, zone, effect))
         if diagnostic:
+            print(f"Checking adjacency for {self.current_hex}.")
+            print(f"Adjacency is {adjacency}.")
+            if self.outcomes[roll] is not None:
+                print(f"Roll produced {self.outcomes[roll]} result")
             print(f"Move is to ({new_hex}, {zone}, {effect})")
             
         # Now, we write the moves to the canvas.
+        if len(self.moves) == 1:
+            msg = "Moves: Start: Hex: {}, Zone: {}, Effect: {}".format(
+                self.moves[0][0], self.moves[0][1], self.moves[0][2])
+            canvas.create_text(anchor=tk.NW)
+        else:
+            i = self.current_move
+            msg = "Move #{}: Hex: {}, Zone: {}, Effect: {}".format(
+                i, self.moves[i][0], self.moves[i][1], self.moves[i][2])
+            canvas.create_text(anchor=tk.NW)
         
-        #label = tk.Label(canvas, )
+        # This stanza writes the data to a CSV file that can be opened in a
+        # spreadsheet program, like Excel.
         with open(output_file, 'a+') as myfile:
             writer = csv.writer(myfile, delimiter=",")
             writer.writerow(self.moves[-1])

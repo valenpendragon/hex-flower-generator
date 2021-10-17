@@ -55,6 +55,12 @@ def process_xml_hex_flower(xmlfile, diagnostic=False, side=20,
     hexdata = hex_flower['hex']
     hftype = hex_flower['@type']
     hfdice = str_to_tuple(hex_flower['@dice'], str)
+    # We need to check hfdice for nulls in the tuple.
+    for i in range(len(hfdice)):
+        chk_dice = list(hfdice)
+        if hfdice[i] == 'null':
+            chk_dice[i] = None
+        hfdice = tuple(chk_dice)
     if diagnostic:
         print(f"Extracted Hex Flower type: {hftype}")
         print(f"Extracted hfdice as type {type(hfdice)}: {hfdice}")
@@ -123,7 +129,6 @@ def initiate_walk():
     walk_canvas = WOW(canvas)
     walk = BasicWalk(hf=hf, start=start, moves=walk_length, diagnostic=diagnostic)
     for i in range(walk_length):
-        time.sleep(3)
         walk.completeMove(walk_canvas, diagnostic=diagnostic,
                           output_file=walk_output_file)
     

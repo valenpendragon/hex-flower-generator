@@ -43,3 +43,4 @@ class WalkOutputWindow(tk.Toplevel):
         super().__init__(parent)
         self.geometry("400x400")
         self.title("Walk Output")
+        
