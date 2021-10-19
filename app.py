@@ -126,10 +126,10 @@ def end_walk():
     pass
 
 def initiate_walk():
-    walk_canvas = WOW(canvas)
+    walk_window = WOW(root)
     walk = BasicWalk(hf=hf, start=start, moves=walk_length, diagnostic=diagnostic)
     for i in range(walk_length):
-        walk.completeMove(walk_canvas, diagnostic=diagnostic,
+        walk.completeMove(walk_window, diagnostic=diagnostic,
                           output_file=walk_output_file)
     
 
@@ -157,6 +157,9 @@ hf = process_xml_hex_flower(xmlfile=xmlfile, canvas_width=canvas_width,
                             canvas_height=canvas_height, side=side,
                             diagnostic=diagnostic)
 board = BW(root)
+# A canvas is needed for the window that we write the polygons that form the
+# HexFlower. We add control buttons using the C.place() method to make the 
+# run start easier for the User.
 canvas = tk.Canvas(board, width=canvas_width, height=canvas_height)
 canvas.grid(row=0, column=0)
 
@@ -169,6 +172,5 @@ ttk.Button(board,
 ttk.Button(board,
            text='Stop Walk',
            command=end_walk).place(x=200, y=375)
-
 hf.drawHexFlower(canvas, diagnostic=diagnostic, width=3)
 tk.mainloop()

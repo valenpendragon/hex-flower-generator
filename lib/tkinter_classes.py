@@ -2,6 +2,7 @@ import tkinter as tk
 from tkinter import ttk
 from tkinter import filedialog as fd
 import sys
+from tkinter.constants import ANCHOR
 
 class ControlPanel(tk.Tk):
     def __init__(self):
@@ -43,4 +44,9 @@ class WalkOutputWindow(tk.Toplevel):
         super().__init__(parent)
         self.geometry("400x400")
         self.title("Walk Output")
+        # We need a space to put the messages from walk. We may need scrollbars
+        # to show all of the moves as well. That means putting this into a text
+        # widget inside the Frame.
+        self.frame = tk.Frame(self, bd=3, bg='light blue').grid(
+            row=0, column=0, columnspan=5, rowspan=16, sticky=tk.NW)
         

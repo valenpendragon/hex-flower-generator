@@ -1,4 +1,5 @@
 import tkinter as tk
+from tkinter import ttk
 from Tools.pynche import ColorDB
 import os, colorsys, math, random, csv, copy
 
@@ -27,7 +28,8 @@ class HexFlower():
             HF.
         drawHexFlower: this method draws the Hex Flower on the supplied 
             canvas, using the attributes already designated in the HF attributes
-            and Hex attributes
+            and Hex attributes. A tkinter.Canvas object is needed because we
+            need the C.create_polygon method for the Hexes.
     """
     # Here are the constants for every Hex Flower. The dictionary lays
     # out the Hexes stacked in each column. Note, this is tkinter. So, the
@@ -150,10 +152,12 @@ class HexFlower():
     def drawHexFlower(self, canvas: tk.Canvas,
                       width=3, diagnostic=False):
         """
-        This method draws the HF on the canvas supplied to it. Start locations,
-        color, and length of a side of each hex are supplied by Hex attributes.
-        width has a default, but can be supplied. diagnostic determines how
-        much text gets sent to stdio while it is runnin.
+        This method draws the HF on the canvas supplied to it. A tkinter.Canvas
+        is required because we leverage the C.create_polygon method to draw the 
+        hexagons for each Hex object in the HexFlower. Start locations, color,
+        and length of a side of each hex are supplied by Hex attributes. width
+        has a default, but is optional. diagnostic determines how much text gets
+        sent to stdio while it is running.
         """
         if diagnostic:
             print(f"drawHexFlower: Arguments received: {locals()}")
@@ -360,7 +364,8 @@ class BasicWalk():
         outcomes: dict, picked from the Class Attributes based on hf.dice
     
     Methods:
-        completeMove: executes a move and updates the canvas supplied as an argument.
+        completeMove: executes a move and updates the TopLevel window supplied
+            as an argument.
     """
     uniformbias = {
         1: 'a', 2: 'b', 3: 'c', 4: 'd', 5: 'e', 6: 'f'}
@@ -441,12 +446,12 @@ class BasicWalk():
         s = s + "Moves thus far: {}".format(self.moves)
         return s
 
-    def completeMove(self, canvas: tk.Canvas, 
+    def completeMove(self, window: tk.Toplevel, 
                      diagnostic=False,
                      output_file="./output/basic_walk_output.csv") -> None:
         """
-        This method performs a move and updates that canvas label with the outcome
-        It requires a tkinter.Canvas to write the data to.
+        This method performs a move and updates that WalkOutputWindow with the
+        outcome. It requires a tkinter.Toplevel to write the data to.
         """
         self.current_move += 1
         if diagnostic:
@@ -454,6 +459,17 @@ class BasicWalk():
         if self.current_move > self.last_move:
             print("Moves are already complete")
             return
+        if len(self.moves) == 1:
+            msg = "Moves: Start: Hex: {}, Zone: {}, Effect: {}".format(
+                self.moves[0][0], self.moves[0][1], self.moves[0][2])
+            with open(output_file, 'a+') as myfile:
+                writer = csv.writer(myfile, delimiter=",")
+                writer.writerow(self.moves[-1])
+                if diagnostic:
+                    print(f"Start written to {output_file}")
+            label = tk.Label(window.frame, text=msg)
+            label.grid(row=0, column=0)
+        
         roll = 0
         for i in range(len(self.hf.dice)):
             if self.hf.dice[i] == 'd4':
@@ -488,16 +504,14 @@ class BasicWalk():
                 print(f"Roll produced {self.outcomes[roll]} result")
             print(f"Move is to ({new_hex}, {zone}, {effect})")
             
-        # Now, we write the moves to the canvas.
-        if len(self.moves) == 1:
-            msg = "Moves: Start: Hex: {}, Zone: {}, Effect: {}".format(
-                self.moves[0][0], self.moves[0][1], self.moves[0][2])
-            canvas.create_text(anchor=tk.NW)
-        else:
-            i = self.current_move
-            msg = "Move #{}: Hex: {}, Zone: {}, Effect: {}".format(
-                i, self.moves[i][0], self.moves[i][1], self.moves[i][2])
-            canvas.create_text(anchor=tk.NW)
+        # Now, we write the move to the TopLevel window.
+        i = self.current_move
+        msg = "Move #{}: Hex: {}, Zone: {}, Effect: {}".format(
+            i, self.moves[i][0], self.moves[i][1], self.moves[i][2])
+        # The index has to the start of an empty line in the text widget.
+        label = tk.Label(window.frame, text=msg)
+        label.grid(row=i, column=0)
+            
         
         # This stanza writes the data to a CSV file that can be opened in a
         # spreadsheet program, like Excel.
