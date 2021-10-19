@@ -468,7 +468,7 @@ class BasicWalk():
                 if diagnostic:
                     print(f"Start written to {output_file}")
             label = tk.Label(window.frame, text=msg)
-            label.grid(row=0, column=0)
+            label.grid(row=0, column=0, sticky=tk.W)
         
         roll = 0
         for i in range(len(self.hf.dice)):
@@ -482,7 +482,10 @@ class BasicWalk():
             print(f"Rolled {roll} using {self.hf.dice}.")
             
         adjacency = self.hf.hexes[self.current_hex - 1].adjacency
-        
+        if diagnostic:
+            print(f"Checking adjacency for {self.current_hex}.")
+            print(f"Adjacency is {adjacency}.")
+    
         if self.outcomes[roll] is None:
             new_hex = None
         else:
@@ -491,15 +494,12 @@ class BasicWalk():
             if diagnostic:
                 print(f"New move is blocked. Staying in hex {self.current_hex}")
             new_hex = self.current_hex
-            self.moves.append(self.moves[-1])
         else:
             self.current_hex = new_hex
         zone = self.hf.hexes[new_hex - 1].zone.type
         effect = self.hf.hexes[new_hex - 1].zone.effect
         self.moves.append((new_hex, zone, effect))
         if diagnostic:
-            print(f"Checking adjacency for {self.current_hex}.")
-            print(f"Adjacency is {adjacency}.")
             if self.outcomes[roll] is not None:
                 print(f"Roll produced {self.outcomes[roll]} result")
             print(f"Move is to ({new_hex}, {zone}, {effect})")
@@ -510,7 +510,9 @@ class BasicWalk():
             i, self.moves[i][0], self.moves[i][1], self.moves[i][2])
         # The index has to the start of an empty line in the text widget.
         label = tk.Label(window.frame, text=msg)
-        label.grid(row=i, column=0)
+        label.grid(row=i, column=0, sticky=tk.W)
+        if diagnostic:
+            print(f"Move in moves is {self.moves[i]}")
             
         
         # This stanza writes the data to a CSV file that can be opened in a

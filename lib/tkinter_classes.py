@@ -9,29 +9,18 @@ class ControlPanel(tk.Tk):
         super().__init__()
         self.geometry('400x400')
         self.title("Hex Flower Generator")
-        menu=tk.Menu(self)
+        self.frame = tk.Frame(self)
+        menu=tk.Menu(self.frame)
         self.config(menu=menu)
         filemenu = tk.Menu(menu)
         menu.add_cascade(label='File', menu=filemenu)
         filemenu.add_command(label="Open...", command=self.openfile)
         filemenu.add_separator()
         filemenu.add_command(label='Exit', command=sys.exit)
-        # Commented out the Help Menu until I can figure out how to make the
-        # program use the menu to open a file.
-        #helpmenu = tk.Menu(menu)
-        #menu.add_cascade(label='Help', menu=helpmenu)
-        #helpmenu.add_command(label="About...", command=self.about)
-        
+       
     def openfile(self):
         name = fd.askopenfilename()
-        return name
-    
-    def about(self):
-        print("Needs an about dialog")
-        ttk.Button(self,
-                   text='File Open',
-                   command=self.callback).grid(row=0, column=0)
-        
+        return name      
 
 class BoardWindow(tk.Toplevel):
     def __init__(self, parent):
