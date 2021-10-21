@@ -460,7 +460,7 @@ class BasicWalk():
             print("Moves are already complete")
             return
         if len(self.moves) == 1:
-            msg = "Moves: Start: Hex: {}, Zone: {}, Effect: {}".format(
+            msg = "Start: Hex: {}, Zone: {}, Effect: {}".format(
                 self.moves[0][0], self.moves[0][1], self.moves[0][2])
             with open(output_file, 'a+') as myfile:
                 writer = csv.writer(myfile, delimiter=",")

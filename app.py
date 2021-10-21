@@ -2,7 +2,6 @@ import tkinter as tk
 from tkinter import ttk
 from lib.classes import Hex, HexFlower, Zone, BasicWalk
 from lib.tkinter_classes import ControlPanel as CP
-from lib.tkinter_classes import WalkOutputWindow as WOW
 from lib.tkinter_classes import BoardWindow as BW
 from xml.etree import cElementTree as ElementTree
 import sys, random, time
@@ -126,10 +125,10 @@ def end_walk():
     pass
 
 def initiate_walk():
-    walk_window = WOW(root)
+    #walk_window = WOW(root)
     walk = BasicWalk(hf=hf, start=start, moves=walk_length, diagnostic=diagnostic)
     for i in range(walk_length):
-        walk.completeMove(walk_window, diagnostic=diagnostic,
+        walk.completeMove(root, diagnostic=diagnostic,
                           output_file=walk_output_file)
     
 
