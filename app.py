@@ -1,10 +1,11 @@
 import tkinter as tk
 from tkinter import ttk
+from tkinter import simpledialog as sd
 from lib.classes import Hex, HexFlower, Zone, BasicWalk
 from lib.tkinter_classes import ControlPanel as CP
 from lib.tkinter_classes import BoardWindow as BW
 from xml.etree import cElementTree as ElementTree
-import sys, random, time
+import sys, random
 from lib.xml_to_dict import xml2dict, etree_to_dict
 
 def process_xml_hex_flower(xmlfile, diagnostic=False, side=20,
@@ -125,12 +126,16 @@ def end_walk():
     pass
 
 def initiate_walk():
-    #walk_window = WOW(root)
+    global start
     walk = BasicWalk(hf=hf, start=start, moves=walk_length, diagnostic=diagnostic)
     for i in range(walk_length):
-        walk.completeMove(root, diagnostic=diagnostic,
+        current_hex = walk.completeMove(root, diagnostic=diagnostic,
                           output_file=walk_output_file)
-    
+    msg = "All moves also written to output file: {}.".format(walk_output_file)
+    label = tk.Label(root.frame, text=msg)
+    label.grid(row=28, column=0, columnspan=2, sticky=tk.W)
+    start = int(current_hex)
+
 
 # Setting default values. This should be changed at some point to allow the
 # user to decide what to use instead.
@@ -138,20 +143,48 @@ canvas_width = 400
 canvas_height = 400
 side = 40
 diagnostic = True
-xmlfile = "./data/basic_hex_flower.xml"
+logging = True
 walk_length = 15
 rows = 2
 cols = 2
-# Considering making this random.randint(1, 10). This is the starting hex for
-# the walk.
 start = 1
 walk_output_file = "./output/walk_resulfs.csv"
 
 root = CP()
-# This is a temporary declaration. It will be replaced by a menu
-# system for picking the HexFlower xml file.
-xmlfile = root.openfile()
-global hf
+
+if logging:
+    file_path = "./JNV/log"
+    sys.stdout = open(file_path, "w")
+
+# Next, we set the walk length for "infinite walks" (aka walks that do not have
+# and imbedded self-termination).
+w_answer = sd.askinteger("Walk Length",
+    "How long do you want this walk to be (default is 15 steps)?",
+    parent=root, minvalue=10, maxvalue=75, initialvalue=walk_length)
+if w_answer != 15:
+    walk_length = w_answer
+
+# Next, we set the output file for the CSV output.
+f_answer = sd.askstring("Output File",
+    "Give a file name for output of this walk (writes to ./output):",
+    parent=root, initialvalue=walk_output_file)
+if f_answer != walk_output_file:
+    walk_output_file = f_answer
+
+# Next, we designate the starting hex.
+s_answer = sd.askinteger("Starting Hex",
+    "Which hex do want to start the walk?\n 1-10 is preferable, 1-19 is acceptable.",
+    parent=root, minvalue=1, maxvalue=19, initialvalue=start)
+if s_answer != start:
+    start = s_answer
+
+# Now, we get the desired xml file containing the Hex Flower data.
+xmlfile = None
+while xmlfile == '' or xmlfile is None:
+    xmlfile = root.openfile()
+if diagnostic:
+    print(f"Information collected: Walk is {w_answer} steps, starting at {s_answer}.")
+    print(f"Hex Flower file is {xmlfile} with output to {f_answer}.")
 hf = process_xml_hex_flower(xmlfile=xmlfile, canvas_width=canvas_width,
                             canvas_height=canvas_height, side=side,
                             diagnostic=diagnostic)
@@ -168,8 +201,5 @@ ttk.Button(board,
 ttk.Button(board,
            text='Start Walk',
            command=initiate_walk).place(x=100, y=375)
-ttk.Button(board,
-           text='Stop Walk',
-           command=end_walk).place(x=200, y=375)
 hf.drawHexFlower(canvas, diagnostic=diagnostic, width=3)
 tk.mainloop()

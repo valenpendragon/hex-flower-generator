@@ -2,12 +2,11 @@ import tkinter as tk
 from tkinter import ttk
 from tkinter import filedialog as fd
 import sys
-from tkinter.constants import ANCHOR
 
 class ControlPanel(tk.Tk):
     def __init__(self):
         super().__init__()
-        self.geometry('400x400')
+        self.geometry('1020x600')
         self.title("Hex Flower Generator")
         self.frame = (self)
         menu=tk.Menu(self.frame)
@@ -19,8 +18,8 @@ class ControlPanel(tk.Tk):
         filemenu.add_command(label='Exit', command=sys.exit)
        
     def openfile(self):
-        name = fd.askopenfilename()
-        return name      
+        name = fd.askopenfilename(initialdir="./data", title="Select XML File")
+        return name
 
 class BoardWindow(tk.Toplevel):
     def __init__(self, parent):

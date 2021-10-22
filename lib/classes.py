@@ -446,9 +446,9 @@ class BasicWalk():
         s = s + "Moves thus far: {}".format(self.moves)
         return s
 
-    def completeMove(self, window: tk.Toplevel, 
+    def completeMove(self, window: tk.Tk, 
                      diagnostic=False,
-                     output_file="./output/basic_walk_output.csv") -> None:
+                     output_file="./output/basic_walk_output.csv") -> int:
         """
         This method performs a move and updates that WalkOutputWindow with the
         outcome. It requires a tkinter.Toplevel to write the data to.
@@ -510,10 +510,14 @@ class BasicWalk():
             i, self.moves[i][0], self.moves[i][1], self.moves[i][2])
         # The index has to the start of an empty line in the text widget.
         label = tk.Label(window.frame, text=msg)
-        label.grid(row=i, column=0, sticky=tk.W)
+        if self.current_move > 50:
+            label.grid(row=i - 50, column=2, sticky=tk.W)
+        elif 50 >= self.current_move > 25:
+            label.grid(row=i - 25, column=1, sticky=tk.W)
+        else:
+            label.grid(row=i, column=0, sticky=tk.W)
         if diagnostic:
             print(f"Move in moves is {self.moves[i]}")
-            
         
         # This stanza writes the data to a CSV file that can be opened in a
         # spreadsheet program, like Excel.
@@ -522,3 +526,4 @@ class BasicWalk():
             writer.writerow(self.moves[-1])
             if diagnostic:
                 print(f"Move written to {output_file}")
+        return self.moves[-1][0]
