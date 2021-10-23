@@ -462,7 +462,7 @@ class BasicWalk():
         if len(self.moves) == 1:
             msg = "Start: Hex: {}, Zone: {}, Effect: {}".format(
                 self.moves[0][0], self.moves[0][1], self.moves[0][2])
-            with open(output_file, 'a+') as myfile:
+            with open(output_file, 'a+', newline='') as myfile:
                 writer = csv.writer(myfile, delimiter=",")
                 writer.writerow(self.moves[-1])
                 if diagnostic:
@@ -521,7 +521,7 @@ class BasicWalk():
         
         # This stanza writes the data to a CSV file that can be opened in a
         # spreadsheet program, like Excel.
-        with open(output_file, 'a+') as myfile:
+        with open(output_file, 'a+', newline='') as myfile:
             writer = csv.writer(myfile, delimiter=",")
             writer.writerow(self.moves[-1])
             if diagnostic:
