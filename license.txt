@@ -18,3 +18,13 @@ GNU General Public License for more details.
 You should have received a copy of the GNU General Public License
 along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
+Credit:
+
+The Weather Branch contains icons created by Erik Flowers 
+(http://www.helloerik.com) and Lukas Bischoff (http://www.twitter.com/artill)
+under the SIL OFL 1.1 license (found here: http://scripts.sil.org/OFL).
+Much thanks to both creators for creating this wonderful set that appears
+in this application.
+
+The concept and many of the random walk designs belong to Goblin's
+Henchmen (https://goblinshenchman.wordpress.com/).
