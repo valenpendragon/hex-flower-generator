@@ -1,5 +1,6 @@
 import tkinter as tk
 from tkinter import ttk
+from PIL import ImageTk, Image
 from Tools.pynche import ColorDB
 import os, colorsys, math, random, csv, copy
 
@@ -149,8 +150,7 @@ class HexFlower():
                     print(f"End loop: Closest: {closest}, counter: {counter}")
             return closest.id
 
-    def drawHexFlower(self, canvas: tk.Canvas,
-                      width=3, diagnostic=False):
+    def drawHexFlower(self, board, width=3, diagnostic=False):
         """
         This method draws the HF on the canvas supplied to it. A tkinter.Canvas
         is required because we leverage the C.create_polygon method to draw the 
@@ -166,7 +166,6 @@ class HexFlower():
         s = self.side
         b = s * math.cos(math.pi / 3)
         h = s * math.sin(math.pi / 3)
-        labels = []
         ctr = 0
         for hex in self.hexes:
             points = []
@@ -182,20 +181,24 @@ class HexFlower():
             if diagnostic:
                 print(points)
             if hex.zone.color:
-                outline=hex.zone.color
+                outline = hex.zone.color
+                fill = hex.zone.color
             else:
-                outline="black"
-            fill=None # I will probably change this later based on zone.effect.
-            canvas.create_polygon(points,
-                                  outline=outline,
-                                  fill=fill,
-                                  width=width)
+                outline = "black"
+                fill = None
+            board.canvas.create_polygon(points,
+                outline=outline,fill=fill, width=width)
+            if diagnostic:
+                print(f"Determining if icon {hex.zone.icon} exists.")
             if hex.zone.icon:
-                icon = tk.PhotoImage(file=hex.zone.icon)
-                labels.append(tk.Label(canvas, image=icon))
+                board.canvas.labels.append(tk.Label(board.canvas,
+                                           image=hex.zone.icon))
             else:
-                labels.append(tk.Label(canvas, text=hex.zone.label))
-            labels[ctr].place(x=x_c, y=y_c, anchor=tk.CENTER)
+                board.canvas.labels.append(tk.Label(board.canvas,
+                                                    text=hex.zone.label))
+            board.canvas.labels[ctr].place(x=x_c, y=y_c, anchor=tk.CENTER)
+            if diagnostic:
+                print(f"Counter {ctr}. Processing label {board.canvas.labels[ctr]}")
             ctr += 1
 
 class Zone():
@@ -233,7 +236,10 @@ class Zone():
                     self.color = color
             else:
                 raise ValueError("color must be a string for a valid color for Python or tkinter")
-        self.icon = icon
+        if icon:
+            self.icon = ImageTk.PhotoImage(Image.open(icon).resize((30,30)))
+        else:
+            self.icon = None
         self.effect = effect
     
     def __str__(self) -> str:
