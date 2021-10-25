@@ -1,5 +1,5 @@
 <?xml version="1.0" standalone='yes'?>
-<hex_flower type="wind speed" dice="(d6,d6)">
+<hex_flower type="normal" dice="(d6,d6)">
     	<hex id="1" vertex="(0,0)">
     	<zone  type="normal" label="1" icon="null" color="black" effect="null"></zone>
         <adjacency>
