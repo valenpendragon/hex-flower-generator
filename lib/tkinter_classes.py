@@ -22,8 +22,10 @@ class ControlPanel(tk.Tk):
         return name
 
 class BoardWindow(tk.Toplevel):
-    def __init__(self, parent):
+    def __init__(self, parent, width, height):
         super().__init__(parent)
         self.geometry("400x400+10+10")
         self.title("Hex Flower")
-        
+        self.canvas = tk.Canvas(self, width=width, height=height)
+        self.canvas.grid(row=0, column=0)
+        self.canvas.labels = []
