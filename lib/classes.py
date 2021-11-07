@@ -1,8 +1,9 @@
 import tkinter as tk
 from tkinter import ttk
 from PIL import ImageTk, Image
-from Tools.pynche import ColorDB
-import os, colorsys, math, random, csv, copy
+from lib.colors import Colors
+from lib.functions import darken_outline
+import os, math, random, csv, copy
 
 class HexFlower():
     """
@@ -181,7 +182,7 @@ class HexFlower():
             if diagnostic:
                 print(points)
             if hex.zone.color:
-                outline = hex.zone.color
+                outline = darken_outline(hex.zone.color)
                 fill = hex.zone.color
             else:
                 outline = "black"
@@ -224,16 +225,16 @@ class Zone():
             self.color='black'
         else:
             if isinstance(color, str):
-                rgb_file = os.path.join(os.path.dirname(ColorDB.__file__),
-                                        'X', 'rgb.txt')
-                rgb_db = ColorDB.get_colordb(rgb_file)
-                colors = [x.lower().replace(' ', '') for x in rgb_db.unique_names()]
-                if diagnostic:
-                    print(f"Colors are {colors}")
-                if color not in colors:
-                    raise ValueError(f"String '{color}' is not a valid color for Python or tkinter")
-                else:
-                    self.color = color
+                # Create the Colors conversion object. Colors automatically
+                # checks colors to see if it should have a '1' at the end of the
+                # string and to see if it exists in the database. It will
+                # raist a ValueError if it isn't. We won't trap that error.
+                # However, making the forward and reverse conversion will take
+                # care of instances of a color having only 'name1', ..., 'nameN'
+                # without a 'name' in the listings.
+                x = Colors()
+                ck_color = x.text_to_color(color)
+                self.color = x.color_to_text(ck_color)
             else:
                 raise ValueError("color must be a string for a valid color for Python or tkinter")
         if icon:
@@ -413,7 +414,7 @@ class BasicWalk():
         if hf.type not in self.correct_types:
             raise ValueError(f"Basic walks are not valid for {hf.type} of hex flower")
         # Setting attributes for this basic walk.
-        self.hf = copy.deepcopy(hf)
+        self.hf = hf
         self.last_move = moves
         self.current_move = 0
         self.current_hex = start
