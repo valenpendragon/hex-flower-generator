@@ -13,8 +13,6 @@ class ControlPanel(tk.Tk):
         self.config(menu=menu)
         filemenu = tk.Menu(menu)
         menu.add_cascade(label='File', menu=filemenu)
-        filemenu.add_command(label="Open...", command=self.openfile)
-        filemenu.add_separator()
         filemenu.add_command(label='Exit', command=sys.exit)
        
     def openfile(self):
@@ -24,7 +22,7 @@ class ControlPanel(tk.Tk):
 class BoardWindow(tk.Toplevel):
     def __init__(self, parent, width, height):
         super().__init__(parent)
-        self.geometry("400x400+10+10")
+        self.geometry("400x400")
         self.title("Hex Flower")
         self.canvas = tk.Canvas(self, width=width, height=height)
         self.canvas.grid(row=0, column=0)

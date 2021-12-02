@@ -7,9 +7,6 @@ from lib.tkinter_classes import BoardWindow as BW
 import sys, random
 from lib.xml_functions import process_xml_hex_flower
 
-def end_walk():
-    pass
-
 def initiate_walk():
     global start
     walk = BasicWalk(hf=hf, start=start, moves=walk_length, diagnostic=diagnostic)
