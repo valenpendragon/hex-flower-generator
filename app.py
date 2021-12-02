@@ -4,7 +4,6 @@ from tkinter import simpledialog as sd
 from lib.classes import Hex, HexFlower, Zone, BasicWalk
 from lib.tkinter_classes import ControlPanel as CP
 from lib.tkinter_classes import BoardWindow as BW
-from xml.etree import cElementTree as ElementTree
 import sys, random
 from lib.xml_functions import process_xml_hex_flower
 
