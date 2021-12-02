@@ -2,7 +2,7 @@ import tkinter as tk
 from tkinter import ttk
 from PIL import ImageTk, Image
 from lib.colors import Colors
-from lib.functions import darken_outline
+from lib.color_functions import darken_outline
 import os, math, random, csv, copy
 
 class HexFlower():
