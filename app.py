@@ -139,22 +139,21 @@ def initiate_walk():
 
 # Setting default values. This should be changed at some point to allow the
 # user to decide what to use instead.
+diagnostic = True
 canvas_width = 400
 canvas_height = 400
 side = 40
-diagnostic = True
 logging = True
+log_file = "./log/log"
 walk_length = 15
-rows = 2
-cols = 2
-start = 1
 walk_output_file = "./output/walk_resulfs.csv"
+start = 1
+walk_type = 'basic'
 
 root = CP()
 
 if logging:
-    file_path = "./JNV/log"
-    sys.stdout = open(file_path, "w")
+    sys.stdout = open(log_file, "w")
 
 # Next, we set the walk length for "infinite walks" (aka walks that do not have
 # and imbedded self-termination).
