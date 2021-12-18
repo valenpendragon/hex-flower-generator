@@ -28,3 +28,7 @@ in this application.
 
 The concept and many of the random walk designs belong to Goblin's
 Henchmen (https://goblinshenchman.wordpress.com/).
+
+Jupyter Notebook and other Anaconda packages used in development are part of
+that community. ipycanvas and ipyevents are projects in the Conda Forge which
+also contributed to this project.
