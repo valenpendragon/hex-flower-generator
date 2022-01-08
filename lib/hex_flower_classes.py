@@ -24,6 +24,14 @@ class Zone:
             Hex that has this Zone attribute.
     Icons allow for a Hex Flower to be displayed with appropriate icons 
     instead of labels.
+
+    The arguments map to attributes as follows:
+        label      --> z.label    must be str
+        z_type     --> z.type     must be str (default: 'normal')
+        color      --> z.color    str or None type
+        icon       --> z.icon     pathtofile or None type
+        effect     --> z.effect   str or None type
+        diagnostic --> diagnostic bool (default: False)
     """
     def __init__(self, label: str, z_type='normal', color=None, icon=None,
                 effect=None, diagnostic=False):
@@ -91,11 +99,29 @@ class Zone:
 
 #123456789b123456789c123456789d123456789e123456789f123456789g123456789h123456789
 
-class Hex(OrderedDict):
+class Hex:
     """
-    This class requires a dictionary with the following structure:
-        id: int, 
+    Hex(id: int, zone: Zone, adjacency: dict)
+
+    Arguments:
+        id: int, required. Number of the hex, range 1-19.
+        zone: Zone, required. Describes the threat level or outcome of landing on
+            a Hex in this zone. Controls labeling and iconography for the Hex.
+        adjacency: dict, required. Determines which other Hexes are adjacent to
+            this Hex and whether movement into that Hex is possible. It is
+            designateed by side of the hex using the following table:
+                a : top hex    b: upper right hex   c: lower right hex
+                d : bottom hex e: lover left hex    f: upper left hex         
+            Each of these letters are adjacency keys and will be unique. A None
+            value for one of these keys means that movement across that side of the
+            Hex is not allowed.
+        diagnostic: bool, optional. Defaults to False. This argument determines if
+            the class will produce diagnostic messages while running.
     
+    The arguments map to attributes as follows:
+        id         --> h.label    must be int, range 1-19
+        zone       --> h.zone     must be Zone type and initialized
+        diagnostic --> diagnostic bool (default: false)
     """
     pass
 
