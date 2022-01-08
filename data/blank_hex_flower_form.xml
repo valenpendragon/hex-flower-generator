@@ -1,6 +1,6 @@
 <?xml version="1.0" standalone='yes'?>
 <hex_flower type="type" dice="(d6,d6)">
-	<hex id="integer" vertex="(138,0)">
+	<hex id="integer">
     	<zone type="type" label="1" icon="null" color="black" effect="null"></zone>
         <adjacency>
             <a>5</a>
