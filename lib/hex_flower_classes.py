@@ -97,7 +97,6 @@ class Zone:
         return s1 + s2 + s3
 
 
-#123456789b123456789c123456789d123456789e123456789f123456789g123456789h123456789
 
 class Hex:
     """
@@ -105,26 +104,74 @@ class Hex:
 
     Arguments:
         id: int, required. Number of the hex, range 1-19.
-        zone: Zone, required. Describes the threat level or outcome of landing on
-            a Hex in this zone. Controls labeling and iconography for the Hex.
-        adjacency: dict, required. Determines which other Hexes are adjacent to
-            this Hex and whether movement into that Hex is possible. It is
+        zone: Zone, required. Describes the threat level or outcome of landing
+            on a Hex in this zone. Controls labeling and iconography for the
+            Hex.
+        adjacency: dict, required. Determines which other Hexes are adjacent
+            to this Hex and whether movement into that Hex is possible. It is
             designateed by side of the hex using the following table:
                 a : top hex    b: upper right hex   c: lower right hex
                 d : bottom hex e: lover left hex    f: upper left hex         
             Each of these letters are adjacency keys and will be unique. A None
-            value for one of these keys means that movement across that side of the
-            Hex is not allowed.
-        diagnostic: bool, optional. Defaults to False. This argument determines if
-            the class will produce diagnostic messages while running.
+            value for one of these keys means that movement across that side of
+            the Hex is not allowed.
+        diagnostic: bool, optional. Defaults to False. This argument determines
+            if the class will produce diagnostic messages while running.
     
     The arguments map to attributes as follows:
-        id         --> h.label    must be int, range 1-19
-        zone       --> h.zone     must be Zone type and initialized
-        diagnostic --> diagnostic bool (default: false)
+        id         --> h.label      must be int, range 1-19
+        zone       --> h.zone       must be Zone type and initialized
+        adjacency  --> h.adjacency  dict with keys {a, b, c, d, e, f}
+        diagnostic --> diagnostic   bool (default: false)
+    
+    Class Attributes:
+        ADJKEYS: a set of all the acceptable adjacency keys.
     """
-    pass
+    ADJKEYS = {'a', 'b', 'c', 'd', 'e', 'f'}
 
+    def __init__(self, id: int, zone: Zone, adjacency: dict, diagnostic=False):
+        if not isinstance(id, int) :
+            raise TypeError(f"Hex: Hex id must be an integer. {id} is not an integer.")
+        elif id < 1 or id > 19:
+            raise TypeError(f"Hex: Hex id must be an integer from 1 to 19.")
+        self.id = id
+        if not isinstance(zone, Zone):
+            raise TypeError(f"Hex: zone must be of type Zone. {zone} is type {type(zone)}.")
+        self.zone = zone
+        
+        if isinstance(adjacency, dict):
+            self.adjacency = {}
+            # We do not know if this is properly configured data. That means
+            # that we might not have the right keys in the dictionary.
+            for k in self.ADJKEYS:
+                try:
+                    if not isinstance(adjacency[k], (int, type(None))):
+                        raise TypeError(f"Hex: adjacency value {adjacency[k]} is not int or None type.")
+                    elif (isinstance(adjacency[k], int) and 
+                         not (1 <= adjacency[k] <= 19)):
+                        raise ValueError(f"Hex: values for adjacency must from 1 to 19. {adjacency[k]} fails the criteria.")
+                    else:
+                        self.adjacency[k] = adjacency[k]                                            
+                except KeyError:
+                    raise ValueError(f"Hex: adjacency key {k} is not a memver of set {self.ADJKEYS}.")
+        else:
+            raise TypeError(f"Hex: adjacency must dict type. {adjacency} is type {type(adjacency)}.")
+        
+        self.diagnostic = diagnostic
+        if self.diagnostic:
+            print(f"Hex: {self} is fully initialized.")
+    
+    def __str__(self) -> str:
+        s1 = f"Hex with attributes: id: {self.id}, zone: {self.zone}. "
+        s2 = f"adjacency: {self.adjacency}, diagnostic: {self.diagnostic}."
+        return s1 + s2
+    
+    def __repr__(self) -> str:
+        s1 = f"Hex(id={self.id}, zone={self.zone.__repr__()}, "
+        s2 = f"adjacency={self.adjacency}, diagnostic={self.diagnostic}"
+        return s1 + s2
+
+#123456789b123456789c123456789d123456789e123456789f123456789g123456789h123456789
 
 
 class HexFlower():
