@@ -4,6 +4,8 @@ import random
 import csv
 from collections import OrderedDict
 from lib.colors import Color, Colors
+from abc import ABC, abstractmethod, abstractproperty
+from xmltodict import parse
 
 class Zone:
     """
@@ -151,7 +153,7 @@ class Hex:
                          not (1 <= adjacency[k] <= 19)):
                         raise ValueError(f"Hex: values for adjacency must from 1 to 19. {adjacency[k]} fails the criteria.")
                     else:
-                        self.adjacency[k] = adjacency[k]                                            
+                        self.adjacency[k] = adjacency[k]                
                 except KeyError:
                     raise ValueError(f"Hex: adjacency key {k} is not a memver of set {self.ADJKEYS}.")
         else:
@@ -171,8 +173,148 @@ class Hex:
         s2 = f"adjacency={self.adjacency}, diagnostic={self.diagnostic}"
         return s1 + s2
 
+
+class HexFlower(OrderedDict):
+    """
+    This class receives an OrderedDict produced by xmltodict and converts
+    it into a HexFlower object. The XML format can be found in the sample
+    hex flowers included in this project. The format for the data once it is
+    imported fully is an OrderedDict with 19 keys, integers 1 through 19, with
+    Hex objects as values. HF also has two attributes, type and dice, that
+    are pulled from the XML file.
+
+    Class Attributes:
+        DICE: set, list of the tuples of dice acceptable for HexFlower.
+        TYPES: set, list of str which are types of supported HexFlowers.
+
+    Instance Attributes:
+        type: str, required, specifies the usage of the Hex Flower.
+        dice: tuple of str, required, specifies the dice rolls for the walks
+            using this hex flower.
+
+    Class Methods:
+        _extract_tuple: internal method that extracts tuples from string
+            and returns the tuple.
+        _extract_adjacency: internal that converts strings in the 
+            OrderedDict adjacency data into integers and None type data.
+            It returns a dict object after verifying that all movement
+            references are eitehr integers between 1 and 19 or are None.
+            Anything that cannot be converted into integers raises a
+            ValueError. Any keys missing from ADJKEYS in the dictionary
+            keys raises a KeyError.
+    
+    """
+    DICE = {('d6', None), (None, 'd8'), ('d6','d6'), ('d4', 'd4', 'd4'), 
+            ('d6', 'd8')}
+    TYPES = {'normal', 'basic'}
+
+    def __init__(self, d: OrderedDict, diagnostic=False):
+        """
+        This method takes an OrderedDict produced by parsing a HexFlower XML
+        file with xmltodict and imports it into a HexFlower object. HF is 
+        based on OrderedDict. This method keeps the final step of conversion
+        self-contained within the class.
+
+        Note: If the XML structure does not match thet format used in the
+        examples, __init__ is very likely to raise KeyError and ValueErrors.
+        """
+        self.type = d['hex_flower']['@type']
+        if self.type not in self.TYPES:
+            raise ValueError(f"Type value {self.type} is not a value options. Options are {self.TYPES}.")
+    
+        # Unfortunately, every data item is a string until we convert them.
+        dice = self._extract_tuple(d['hex_flower']['@dice'])
+        if not isinstance(dice, tuple):
+            raise TypeError(f"Dice must be a tuple of strings or None type.")
+        if dice not in self.DICE:
+            raise ValueError(f"Hex Flower:Dice value {dice} is not a valid option. Options are {DICE}.")
+        self.dice = dice
+        self.diagnostic=diagnostic
+        if diagnostic:
+            print(f"HexFlower: Attritute initialized. Beginning population of Hex objects.")
+        
+        # Now, we need to extra the Hexes and import them into the HexFlower.
+        # Again, if the format is wrong, this will explode quickly. As before
+        # we need extra some of the strings and convert them to integer or
+        # None type.
+        for i in range(19):
+            id = int(d['hex_flower']['hex'][i]['@id'])
+            adjacency = self._extract_adjacency(id,
+                d['hex_flower']['hex'][i]['adjacency'])
+            self[i+1] = Hex(
+                id=id,
+                zone = Zone(
+                    label=d['hex_flower']['hex'][i]['zone']['@label'],
+                    z_type=d['hex_flower']['hex'][i]['zone']['@type'],
+                    icon=d['hex_flower']['hex'][i]['zone']['@icon'],
+                    color=d['hex_flower']['hex'][i]['zone']['@color'],
+                    effect=d['hex_flower']['hex'][i]['zone']['@effect']),
+                adjacency=adjacency,
+                diagnostic=diagnostic
+            )
+        if diagnostic:
+            print(f"HexFlower: Hexes loaded. Initialization completed.")
+            print(f"Hex Flower is now {self}.")
+    
+    def _extract_tuple(self, s: str) -> tuple:
+        """
+        This method receives a string representation of a tuple and returns
+        the tuple contained within it.
+        """
+        s = s.replace('(', '')
+        s = s.replace(')', '')
+        s = s.split(',')
+        return tuple(s)
+    
+    def _extract_adjacency(self, id: int, d: OrderedDict) -> dict:
+        """
+        This method receives an OrderedDict of adjacency data. It also 
+        receives the Hex id. That allows for an error message  that 
+        specifies which Hex in the XML file contains bad data. It returns a
+        dict, converting string of integers into integers and 'null' into
+        None type. It also checks to make sure that the integers. If the
+        conversion to integer fails or an invalid string is found, it raises
+        a KeyErrors or ValueErrors as appropriate.
+        """
+        ADJKEYS = {'a', 'b', 'c', 'd', 'e', 'f'}
+        adjacency = {}
+        if set(d.keys()) != ADJKEYS:
+            raise KeyError(f"Keys for adjacency for Hex {id} are invalid. Must be {ADJKEYS}.")
+        for k in ADJKEYS:
+            val = d[k]
+            # First, check for 'null'. If not, it must be a str(int).
+            if val == 'null':
+                adjacency[k] = None
+            else:
+                try:
+                    val = int(val)
+                    if 1 <= val <= 19:
+                        adjacency[k] = val
+                    else:
+                        raise ValueError(f"HexFlower: Adjacency in Hex {id} for key {k} exceeds [1,19] range.")
+                except ValueError:
+                    raise ValueError(f"HexFlower: Adjacency is not an integer in Hex {id} for key {k}.")
+        return adjacency
+
+
+
+#123456789b123456789c123456789d123456789e123456789f123456789g123456789h123456789
+class Walk(ABC):
+    pass
+
+class NormalWalk(Walk):
+    """
+    Include Terrain and Weather here.
+    """
+    pass
+
+
+
+class CourtWalk(Walk):
+    pass
+
+class MoraleWalk(Walk):
+    pass
+
 #123456789b123456789c123456789d123456789e123456789f123456789g123456789h123456789
 
-
-class HexFlower():
-    pass
