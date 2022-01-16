@@ -7,6 +7,7 @@ from lib.colors import Color, Colors
 from abc import ABC, abstractmethod, abstractproperty
 from xmltodict import parse
 
+
 class Zone:
     """
     Zone(label: str, type='normal', color=None, icon=None, effect=None)
@@ -186,11 +187,14 @@ class HexFlower(OrderedDict):
     Class Attributes:
         DICE: set, list of the tuples of dice acceptable for HexFlower.
         TYPES: set, list of str which are types of supported HexFlowers.
+        ADJKEYS: set, list of str which are keys for adjacency dictionary
 
     Instance Attributes:
         type: str, required, specifies the usage of the Hex Flower.
         dice: tuple of str, required, specifies the dice rolls for the walks
             using this hex flower.
+        diagnostic: bool, optional, defaults to False. Used to toggle on/off
+            diagnostic messages to stdio.
 
     Class Methods:
         _extract_tuple: internal method that extracts tuples from string
@@ -207,6 +211,7 @@ class HexFlower(OrderedDict):
     DICE = {('d6', None), (None, 'd8'), ('d6','d6'), ('d4', 'd4', 'd4'), 
             ('d6', 'd8')}
     TYPES = {'normal', 'basic'}
+    ADJKEYS = {'a', 'b', 'c', 'd', 'e', 'f'}
 
     def __init__(self, d: OrderedDict, diagnostic=False):
         """
@@ -276,11 +281,10 @@ class HexFlower(OrderedDict):
         conversion to integer fails or an invalid string is found, it raises
         a KeyErrors or ValueErrors as appropriate.
         """
-        ADJKEYS = {'a', 'b', 'c', 'd', 'e', 'f'}
         adjacency = {}
-        if set(d.keys()) != ADJKEYS:
+        if set(d.keys()) != self.ADJKEYS:
             raise KeyError(f"Keys for adjacency for Hex {id} are invalid. Must be {ADJKEYS}.")
-        for k in ADJKEYS:
+        for k in self.ADJKEYS:
             val = d[k]
             # First, check for 'null'. If not, it must be a str(int).
             if val == 'null':
@@ -296,9 +300,52 @@ class HexFlower(OrderedDict):
                     raise ValueError(f"HexFlower: Adjacency is not an integer in Hex {id} for key {k}.")
         return adjacency
 
+    def __str__(self) -> str:
+        s1 = f"HexFlower (based on OrderedDict) with class attributes: "
+        s2 = f"DICE: {self.DICE}, TYPES: {self.TYPES}, and instance attributes:"
+        s3 = f" type: {self.type}, dice: {self.dice}, containing Hex objects: "
+        s4 = f" {super(HexFlower, self).__str__()}"
+        return s1 + s2 + s3
 
-
-#123456789b123456789c123456789d123456789e123456789f123456789g123456789h123456789
+    def __repr__(self) -> str:
+        #               (           ([(                         ([(         
+        s1 = f"HexFlower(OrderedDict([('hex_flower', OrderedDict([('@type', "
+        dice = str(self.dice).replace("'", "")
+        #                  )  (                )
+        s2 = f" {self.type}), ('@dice','{dice}'),"
+        #         ( hex data opened
+        h_str = " ('hex', "
+        for i in range(1, 20):
+            #      [           ([(                    )   (
+            h1 = f"[OrderedDict([('@id', '{self[i].id}'), ('zone', "
+            #                 ([(                              )
+            h2 = f"OrderedDict([('@type', '{self[i].zone.type}'), "
+            #      (                              )
+            h3 = f"('@label', '{self[i].zone.label}'), "
+            #      (                            )
+            h4 = f"('@icon', '{self[i].zone.icon}'), "
+            #      (                              )
+            h5 = f"('@color', '{self[i].zone.color}'), "
+            #      (                                )])) zone closed
+            h6 = f"('@effect', '{self[i].zone.effect}')])), "
+            #           (                        ([
+            adj_str = f"('adjacency', OrderedDict(["
+            for item in self.ADJKEYS:
+                if self[i].adjacency[item]:
+                    adj = self[i].adjacency[item]
+                else:
+                    adj = 'null'
+                #                     (                 )
+                adj_str = adj_str + f"('{item}', '{adj}'), "
+            if i != 19:
+                # hex & adjacency closed
+                hc = "]))]), "
+            else:
+                # hex, adjacency, and hex flower closed
+                hc = "])]))])"
+            h_str = h_str + h1 + h2 + h3 + h4 + h5 + h6 + adj_str + hc
+        return s1 + s2 + h_str
+    
 class Walk(ABC):
     pass
 
