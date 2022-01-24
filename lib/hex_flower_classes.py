@@ -220,7 +220,7 @@ class HexFlower(OrderedDict):
     # Constant Class Attributes
     DICE = {('d6', None), (None, 'd8'), ('d6','d6'), ('d4', 'd4', 'd4'), 
             ('d6', 'd8')}
-    TYPES = {'normal', 'basic'}
+    TYPES = {'normal', 'basic', 'terrain', 'weather'}
     ADJKEYS = {'a', 'b', 'c', 'd', 'e', 'f'}
 
     def __init__(self, d: OrderedDict, diagnostic=False):
@@ -409,15 +409,17 @@ class Walk(ABC):
             lower hexes, uses 3d4
         SPECIAL: dict, this provides a wider distribution across lower
             hexes, uses d6+d8 to produce the distribution
+        TYPES: set of strings, an empty list for this base class, since it
+            cannot instantiate anything, used to identify which types of
+            HexFlower a walk subclass supports
 
         Note: Most of these bias tables can be found in the Hex Flower
         Cookbook by Goblin's Henchman. This is an implementation of the 
         Navigation Hexes.
 
-        Note: Each subclass is required to have the one additional class 
-        attribute, types. This is a set containing the strings of types that
-        are compatible for the subclass of Walk in development. Here are a
-        couple examples:
+        Note: Each subclass is required to use the class attribute, types,
+        to control the supported HexFlower types. W.TYPES is a set containing
+        strings listing said types. Here are a couple examples:
             types = {'normal', 'basic'}
             types = {'terrain', 'weather'}
     
@@ -435,6 +437,7 @@ class Walk(ABC):
         start position is added. So, len(w.steps) = w.length + 1.
     
     Class Methods:
+        None
 
     Internal Class Methods:
         _check_walk_length: used by __init__ to validate walk length before
@@ -462,6 +465,9 @@ class Walk(ABC):
     SPECIAL = {
         2: 'a',   3: 'b',  4: 'b',  5: 'c',  6: 'c', 7: 'd', 8: 'd',
         9: None, 10: 'e', 11: 'e', 12: 'f', 13: 'f', 14: 'a'}
+    # This class attribute is empty in the abstract base class because it
+    # cannot support instantiation.
+    TYPES = set()
     
     def __init__(self, hf: HexFlower, length: int, start=1,
                  diagnostic=False):
@@ -489,7 +495,7 @@ class Walk(ABC):
         if self._check_walk_length(length):
             self.length = length
         else:
-            raise ValueError(f"{length} is not valid for this type of Walk.")
+            raise ValueError(f"{length} is not a valid walk length for this type of Walk.")
         if self._check_walk_type(hf.type):
             self.type = hf.type
             self.hf = hf
@@ -502,7 +508,7 @@ class Walk(ABC):
             # Add start to steps.
             self.steps.append(Step(0, start, self.hf[start].zone.effect))
         else:
-            raise ValueError(f"{start} is not a valid starting hex for this Walk class.")
+            raise ValueError(f"{start} is not a valid starting hex for any 19 Hex Hex Flower.")
         self.diagnostic = diagnostic
         if self.diagnostic:
             print(f"{self.__class__.__name__} has been initialized successfully.")
@@ -517,14 +523,16 @@ class Walk(ABC):
         """
         pass
 
-    @abstractmethod
     def _check_walk_type(self, walk_type: str) -> bool:
         """
         This internal method makes certain the wwlk type for the HexFlower is
         compatible with the Walk subclass requested. Returns True if the walk
         type is compatible, False otherwise.
         """
-        pass
+        if walk_type in self.TYPES:
+            return True
+        else:
+            return False
 
     def _check_walk_start(self, start: int) -> bool:
         """
@@ -564,11 +572,55 @@ class Walk(ABC):
 
 class BasicWalk(Walk):
     """
-    Include Terrain and Weather here.
+    BasicWalk(hf: HexFlower, length: int, diagnostic=False)
+
+    Arguments:
+        hf: HexFlower, required
+        length: int, required in most subclasses, 0 indicates infinite
+        diagnostic: bool, determines whether or not the method print
+            diagnostic messages to stdio
+
+    This is an implementation of the "infinite" walk designed by Goblin's
+    Henchman. This type is used for most HexFlowers. The types supported by
+    this class include basic, normal, terrain, and weather. To control
+    this type and keep it from running forever, it requires a fixed walk
+    length. The range of acceptable values for walk length are integers
+    between 10 and 75. So, there is a minimum and a maximem.
+
+    It inherits the Walk tables which as class constants and adds a new
+    class attribute, types. As with Walk, it relies on the HexFlower class to
+    ensure that a valid HexFlower object has been provided as an argument. It
+    also inherits all of the attributes from Walk. It also inherits all of the
+    methods from Walk, only overriding one internal validator method.
+
+    Overriden Class Attributes:
+        TYPES: set of strings, contains all supported types of HexFlower as
+            strings
+    
+    Overriden Instance Methods:
+        _check_walk_length: used by __init__ to validate walk length before
+            setting the attribute, must be an integer from 10 to 75
+
+    New Instance Methods:
+        None
     """
+    TYPES = {'normal', 'basic', 'terrain', 'weather'}
+
+    def _check_walk_length(self, length: int) -> bool:
+        """
+        This internal method makes certain the wwlk length, if used, is set
+        correctly for the tyhpe of walk. Returns True if the walk length is
+        a usable value, False otherwise. For this Basic Walks, walk length
+        needs to be between 10 and 75.
+        """
+        if isinstance(length, int):
+            if 10 <= length <= 75:
+                return True
+        return False
+
+
+class TerminalEventWalk(Walk):
     pass
-
-
 
 class CourtWalk(Walk):
     pass
