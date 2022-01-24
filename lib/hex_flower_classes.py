@@ -2,15 +2,16 @@ import os
 import math
 import random
 import csv
-from collections import OrderedDict
+from collections import OrderedDict, namedtuple
 from lib.colors import Color, Colors
-from abc import ABC, abstractmethod, abstractproperty
+from abc import ABC, abstractmethod
 from xmltodict import parse
 
 
 class Zone:
     """
-    Zone(label: str, type='normal', color=None, icon=None, effect=None)
+    Zone(label: str, type='normal', color=None, icon=None, effect=None,
+         diagnostic=False)
 
     Arguments:
         label: str, required. Usually this is the corresponding Hex.id to
@@ -103,7 +104,7 @@ class Zone:
 
 class Hex:
     """
-    Hex(id: int, zone: Zone, adjacency: dict)
+    Hex(id: int, zone: Zone, adjacency: dict, diagnostic=False)
 
     Arguments:
         id: int, required. Number of the hex, range 1-19.
@@ -130,6 +131,7 @@ class Hex:
     Class Attributes:
         ADJKEYS: a set of all the acceptable adjacency keys.
     """
+    # Constant Class Attributes
     ADJKEYS = {'a', 'b', 'c', 'd', 'e', 'f'}
 
     def __init__(self, id: int, zone: Zone, adjacency: dict, diagnostic=False):
@@ -177,6 +179,13 @@ class Hex:
 
 class HexFlower(OrderedDict):
     """
+    HexFlower(data: OrderedDict, diagnostic=False)
+
+    Arguments:
+        data: OrderedDict, HexFlower data extracted via xmltodict
+        diagnostic: bool, optional, determines if the Class prints out
+            diagnostic data to stdio
+
     This class receives an OrderedDict produced by xmltodict and converts
     it into a HexFlower object. The XML format can be found in the sample
     hex flowers included in this project. The format for the data once it is
@@ -208,6 +217,7 @@ class HexFlower(OrderedDict):
             keys raises a KeyError.
     
     """
+    # Constant Class Attributes
     DICE = {('d6', None), (None, 'd8'), ('d6','d6'), ('d4', 'd4', 'd4'), 
             ('d6', 'd8')}
     TYPES = {'normal', 'basic'}
@@ -345,11 +355,214 @@ class HexFlower(OrderedDict):
                 hc = "])]))])"
             h_str = h_str + h1 + h2 + h3 + h4 + h5 + h6 + adj_str + hc
         return s1 + s2 + h_str
-    
-class Walk(ABC):
-    pass
 
-class NormalWalk(Walk):
+
+Step = namedtuple('Step', ['step_num', 'hex', 'effect'])
+
+class Walk(ABC):
+    """
+    Walk(hf: HexFlower, length: int, diagnostic=False)
+
+    Arguments:
+        hf: HexFlower, required
+        length: int, required in most subclasses, 0 indicates infinite
+        diagnostic: bool, determines whether or not the method print
+            diagnostic messages to stdio
+
+    Walks use standard tables to determine the next possible most in any
+    walk. The HexFlower data determines which of these moves are possible
+    from the current Hex as well as which table and 'dice' to use when rolling
+    the move. The dice options can be found in the HexFlower.DICE class constant
+    while the HexFlower.TYPES class constant lists all of the types of walks
+    that have been implemented thus far. Remember as well that the
+    HexFlower.ADJKEYS class constant are the edges of the Hex, designated by
+    'a' for the top edge and working clockwise around the Hex to 'f' in the
+    upper left edge.
+
+    Walk tables include uniform and non-uniform options for movement. These
+    tables are incorporated into dictionaries to make them easier to code.
+    All of the tables are class constants.
+
+    Note: In addition to blocked movement with some of these distributions,
+    the HexFlower in its original definition blocked movement south ouf of
+    Hex 1 into Hex 19 (the most severe outcome). It also blocked some moves
+    from Hexes 17-19 (very severe outcomes) into the lowest ranks of Hexes to
+    simulate the low probabilities of dire outcomes disappearing quickly.
+
+    Note: This class assumes that HexFlower, Hex, and Zone classes did their
+    full data checks of the HexFlower data during importation. This class
+    and its subclasses will only perform checks of the types of HexFlowers
+    considered acceptable to the type of Walk in question.
+
+    This cleas requires a HexFlower to initiaze the Walk and a walk length,
+    an integer. Each subcless will implement its own restrictions on the
+    walk length, some of which will not require one.
+
+    Class Attributes (constants):
+        UNIFORMBIAS: dict, handles a uniform distribution around the Hex edges
+        NUNIFORMBIAS: dict, also a uniform bias distribution, but 2 options
+            produce None automatically
+        STANDARDBIAS: dict, handles the original bias table created for this
+            determination method which biases toward the lower left Hexes,
+            uses 2d6
+        SOUTHBIAS: dict, a "bell curve" bias the focuses movement toward the
+            lower hexes, uses 3d4
+        SPECIAL: dict, this provides a wider distribution across lower
+            hexes, uses d6+d8 to produce the distribution
+
+        Note: Most of these bias tables can be found in the Hex Flower
+        Cookbook by Goblin's Henchman. This is an implementation of the 
+        Navigation Hexes.
+
+        Note: Each subclass is required to have the one additional class 
+        attribute, types. This is a set containing the strings of types that
+        are compatible for the subclass of Walk in development. Here are a
+        couple examples:
+            types = {'normal', 'basic'}
+            types = {'terrain', 'weather'}
+    
+    Instance Attributes:
+        type: str, the type of Walk being performed
+        length: int, the lenght of the Walk, 0 indicates infinite
+        start: int, optional, defaults to 1
+        count: int, starts at 0, counter for the steps
+        hf: HexFlower, the actual data used during the Walk
+        steps: list, contains namedtuples in the form Step(step_num: int,
+            hex: int, effect: str or None)
+        diagnostic: bool, optional (default: False), determines if the
+            program will print diagnostic messages to stdio
+        Note: The length of the Walk is the number of steps taken after the
+        start position is added. So, len(w.steps) = w.length + 1.
+    
+    Class Methods:
+
+    Internal Class Methods:
+        _check_walk_length: used by __init__ to validate walk length before
+            setting the attribute
+        _check_type: used by __init__ to validate that the HexFlower is a
+            compatible type for the Walk being run before setting the
+            attribute
+        _check_walk_start: validate that the start is an integer, and is
+            usable for this subclass of Walk.
+        Note: _check_walk_start is NOT an abstract method. It is coded here
+        because most subclasses of Walk can use it unchanged.
+
+    """
+    # Class Attributes Constants
+    UNIFORMBIAS = {
+        1: 'a', 2: 'b', 3: 'c', 4: 'd', 5: 'e', 6: 'f'}
+    NUNIFORMBIAS = {
+        1: 'a', 2: 'b', 3: 'c', 4: 'd', 5: 'e', 6: 'f', 7: None, 8: None}
+    STANDARDBIAS = {
+        2: 'b', 3: 'b',  4: 'c',  5: 'c',  6: 'd', 7: 'd',
+        8: 'e', 9: 'e', 10: 'f', 11: 'f', 12: 'a'}
+    SOUTHBIAS = {
+        3: 'b', 4: 'b',  5: 'c',  6: 'c', 7: 'd',
+        8: 'e', 9: 'e', 10: 'f', 11: 'f', 12: 'a'}
+    SPECIAL = {
+        2: 'a',   3: 'b',  4: 'b',  5: 'c',  6: 'c', 7: 'd', 8: 'd',
+        9: None, 10: 'e', 11: 'e', 12: 'f', 13: 'f', 14: 'a'}
+    
+    def __init__(self, hf: HexFlower, length: int, start=1,
+                 diagnostic=False):
+        """
+        This class requires a HexFlower object that has been properly
+        imported and validated by its class constructor. It also requires
+        an integer walk length that is greater than zero. Data validation
+        during construction will be handled by internal methods that will
+        overwritten by the subclasses.
+
+        When implementing subclasses to this abstract class, make every
+        effort to focus overrides on the internal methods instead of the
+        dunder methods.
+
+        __init__ calls the follogin internal methods:
+            _check_walk_length: validate walk length before setting the
+                attribute
+            _check_walk_type: validate that the HexFlower is the correct type
+                for the Walk being run before setting the attribute
+            _check_walk_start: validate that the start is an integer, and is
+                usable for this subclass of Walk.
+            Note: _check_walk_start is NOT an abstract method. It is coded
+            here because most subclasses of Walk can use it unchanged.
+        """
+        if self._check_walk_length(length):
+            self.length = length
+        else:
+            raise ValueError(f"{length} is not valid for this type of Walk.")
+        if self._check_walk_type(hf.type):
+            self.type = hf.type
+            self.hf = hf
+        else:
+            raise ValueError(f"{hf.type} is not compatible with this Walk class.")
+        self.steps = []
+        self.count = 0
+        if self._check_walk_start(start):
+            self.start = start
+            # Add start to steps.
+            self.steps.append(Step(0, start, self.hf[start].zone.effect))
+        else:
+            raise ValueError(f"{start} is not a valid starting hex for this Walk class.")
+        self.diagnostic = diagnostic
+        if self.diagnostic:
+            print(f"{self.__class__.__name__} has been initialized successfully.")
+            print(f"Walk object is now {self}.")
+
+    @abstractmethod
+    def _check_walk_length(self, length: int) -> bool:
+        """
+        This internal method makes certain the wwlk length, if used, is set
+        correctly for the tyhpe of walk. Returns True if the walk length is
+        a usable value, False otherwise.
+        """
+        pass
+
+    @abstractmethod
+    def _check_walk_type(self, walk_type: str) -> bool:
+        """
+        This internal method makes certain the wwlk type for the HexFlower is
+        compatible with the Walk subclass requested. Returns True if the walk
+        type is compatible, False otherwise.
+        """
+        pass
+
+    def _check_walk_start(self, start: int) -> bool:
+        """
+        This internal method makes certain that the starting Hex is set to an
+        integer between 1 and 19 (the only values valid for a 19 Hex
+        HexFlower). It returns True if so, False otherwise.
+
+        If other restrictions apply (such as starting at 10 only or a specific
+        Zone or small group of values), override this method.
+        """
+        if isinstance(start, int):
+            if 1 <= start <=19:
+                return True
+        return False
+
+    def __str__(self):
+        """
+        This method is fully defined here to avoid duplicating code in the
+        subclasses.
+        """
+        s1 = f"{self.__class__.__name__} with attributes: type: {self.type}, "
+        s2 = f"length: {self.length}, start: {self.start}, "
+        s3 = f"count: {self.count}, hf: {self.hf}, steps: {self.steps}, "
+        s4 = f"diagnostic: {self.diagnostic}."
+        return s1 + s2 + s3 + s4
+
+    def __repr__(self):
+        """
+        This method is fully defined here to avoid duplicating code in the
+        subclasses.
+        """
+        s1 = f"{self.__class__.__name__}(hf={repr(self.hf)}, length="
+        s2 = f"{self.length}, start={self.start}, diagnostic="
+        s3 = f"{self.diagnostic})"
+        return s1 + s2 + s3
+
+
+class BasicWalk(Walk):
     """
     Include Terrain and Weather here.
     """
