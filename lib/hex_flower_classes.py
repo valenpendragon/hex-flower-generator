@@ -1,3 +1,4 @@
+from calendar import c
 import os
 import math
 import random
@@ -29,6 +30,9 @@ class Zone:
     Icons allow for a Hex Flower to be displayed with appropriate icons 
     instead of labels.
 
+    Note: Zone.__init__ will handle 'null' or 'None' values for icon and 
+    effect as None. XML files do not contain None type.
+
     The arguments map to attributes as follows:
         label      --> z.label    must be str
         z_type     --> z.type     must be str (default: 'normal')
@@ -51,7 +55,7 @@ class Zone:
         
         # We need to validate the color choice. First we check to see if it is
         # set to None.
-        if color is None:
+        if color is None or color == 'null' or color == 'None':
             self.color = 'black'
         else:
             if not isinstance(color, str):
@@ -69,7 +73,7 @@ class Zone:
                 # data are invalid.
                 rgb = x.text_to_color(color)
             self.color = x.color_to_hex(rgb)
-        if icon is None:
+        if icon is None or icon == 'null'  or icon == 'None':
             self.icon = None
         else:
             # We need to make sure the file exists. If not, we need to fail.
@@ -78,7 +82,7 @@ class Zone:
             else:
                 raise IOError(f"{icon} icon file not found.")
         # Effect has to be a string or None as well.
-        if effect is None:
+        if effect is None or effect == 'null' or effect == 'None':
             self.effect = None
         elif not isinstance(effect, str):
             raise TypeError(f"Zone: effect must be str or None type.")
@@ -242,7 +246,7 @@ class HexFlower(OrderedDict):
         if not isinstance(dice, tuple):
             raise TypeError(f"Dice must be a tuple of strings or None type.")
         if dice not in self.DICE:
-            raise ValueError(f"Hex Flower:Dice value {dice} is not a valid option. Options are {DICE}.")
+            raise ValueError(f"Hex Flower: Dice value {dice} is not a valid option. Options are {self.DICE}.")
         self.dice = dice
         self.diagnostic=diagnostic
         if diagnostic:
@@ -278,7 +282,12 @@ class HexFlower(OrderedDict):
         """
         s = s.replace('(', '')
         s = s.replace(')', '')
+        s = s.replace(' ', '')
+        s = s.replace("'", "")
         s = s.split(',')
+        for i in range(len(s)):
+            if s[i] == 'null' or s[i] == 'None':
+                s[i] = None
         return tuple(s)
     
     def _extract_adjacency(self, id: int, d: OrderedDict) -> dict:
@@ -315,7 +324,7 @@ class HexFlower(OrderedDict):
         s2 = f"DICE: {self.DICE}, TYPES: {self.TYPES}, and instance attributes:"
         s3 = f" type: {self.type}, dice: {self.dice}, containing Hex objects: "
         s4 = f" {super(HexFlower, self).__str__()}"
-        return s1 + s2 + s3
+        return s1 + s2 + s3 + s4
 
     def __repr__(self) -> str:
         #               (           ([(                         ([(         
@@ -433,6 +442,8 @@ class Walk(ABC):
             hex: int, effect: str or None)
         diagnostic: bool, optional (default: False), determines if the
             program will print diagnostic messages to stdio
+        bias: dict, set to the bias the dice calls for, drawn from the class
+            constants
         Note: The length of the Walk is the number of steps taken after the
         start position is added. So, len(w.steps) = w.length + 1.
     
@@ -447,6 +458,8 @@ class Walk(ABC):
             attribute
         _check_walk_start: validate that the start is an integer, and is
             usable for this subclass of Walk.
+        _determine_bias: assigns the value of the correct class constant to
+            W.bias attribute, performed in place when called by __init__.
         Note: _check_walk_start is NOT an abstract method. It is coded here
         because most subclasses of Walk can use it unchanged.
 
@@ -509,6 +522,7 @@ class Walk(ABC):
             self.steps.append(Step(0, start, self.hf[start].zone.effect))
         else:
             raise ValueError(f"{start} is not a valid starting hex for any 19 Hex Hex Flower.")
+        self.bias = self._determine_bias()
         self.diagnostic = diagnostic
         if self.diagnostic:
             print(f"{self.__class__.__name__} has been initialized successfully.")
@@ -556,7 +570,7 @@ class Walk(ABC):
         s1 = f"{self.__class__.__name__} with attributes: type: {self.type}, "
         s2 = f"length: {self.length}, start: {self.start}, "
         s3 = f"count: {self.count}, hf: {self.hf}, steps: {self.steps}, "
-        s4 = f"diagnostic: {self.diagnostic}."
+        s4 = f"diagnostic: {self.diagnostic}, bias: {self.bias}."
         return s1 + s2 + s3 + s4
 
     def __repr__(self):
@@ -568,6 +582,105 @@ class Walk(ABC):
         s2 = f"{self.length}, start={self.start}, diagnostic="
         s3 = f"{self.diagnostic})"
         return s1 + s2 + s3
+
+    def roll_dice(self) -> int:
+        """
+        This method uses w.hf.dice to generate a dice roll for Walks. This 
+        method should be ubiquitous for all Walks, regardless of types. It 
+        returns the integer value of the roll.
+        """
+        roll = 0
+        for i in range(len(self.hf.dice)):
+            if self.hf.dice[i] == 'd4':
+                roll += random.randint(1, 4)
+            elif self.hf.dice[i] == 'd6':
+                roll += random.randint(1, 6)
+            elif self.hf.dice[i] == 'd8':
+                roll += random.randint(1, 8)
+        if self.diagnostic:
+            print(f"roll_dice: Rolled {roll} using {self.hf.dice}.")
+        return roll
+
+    def _determine_bias(self) -> dict:
+        """
+        When called by __init__,  this method uses the dice tuple, W.dice, to
+        identify the correct class constant to assign to W.bias and returns
+        it. The method counts the types of dice in the tuple and stores them
+        in
+        """
+        dice = self.hf.dice
+        d_ctr = {'d4': 0, 'd6': 0, 'd8': 0}
+        for i in range(len(dice)):
+            if dice[i] == 'd4':
+                d_ctr['d4'] += 1
+            elif dice[i] == 'd6':
+                d_ctr['d6'] += 1
+            elif dice[i] == 'd8':
+                d_ctr['d8'] += 1
+        if d_ctr['d4'] == 3:
+            return self.SOUTHBIAS
+        elif d_ctr['d6'] == 2:
+            return self.STANDARDBIAS
+        elif d_ctr['d6'] == 1 and d_ctr['d8'] == 1:
+            return self.SPECIAL
+        elif d_ctr['d6'] == 1 and d_ctr['d8'] == 0:
+            return self.UNIFORMBIAS
+        else:
+            return self.NUNIFORMBIAS
+    
+    def next_step(self):
+        """
+        This method adds a new Step to the W.steps list. All of its operations
+        are performed in place. This method can be used to single step a walk
+        beyond an end point, as it ignores the length.
+        """
+        roll = self.roll_dice()
+        last_step = self.count
+        self.count += 1
+        last_hex = self.steps[-1].hex
+        adjacency = self.hf[last_hex].adjacency
+        if self.diagnostic:
+            print(f"next_step: roll is {roll}, last step is {last_step}")
+            print(f"next_step: last hex is {last_hex}, adjacency is {adjacency}.")
+            print(f"next_step: step is now {self.count}")
+        # There are two instances that moves are directly blocked by the dice
+        # roll result, not just the adjacency indicators. The first is a 7 or
+        # 8 on a d8.  The second is 9 on d6+d8.
+        if self.bias == self.NUNIFORMBIAS and roll > 6:
+            new_hex = None
+        elif self.bias == self.SPECIAL and roll == 9:
+            new_hex = None
+        else:
+            # Everything else returns a letter that we have to check against
+            # the current hex's adjacency to see the new Hex number. Some
+            # hexes have blocked movement across the edges, producing a None
+            # result.
+            new_hex = adjacency[self.bias[roll]]
+        if new_hex:
+            # Movement is not blocked.
+            effect = self.hf[new_hex].zone.effect
+            new_step = Step(step_num=self.count, 
+                            hex=new_hex, 
+                            effect=self.hf[new_hex].zone.effect)
+            if self.diagnostic:
+                print(f"next_step: new move is {new_step}")
+        else:
+            # Movement is blocked
+            new_step = self.steps[-1]
+            if self.diagnostic:
+                print(f"next_step: Movement is blocked.")
+        self.steps.append(new_step)
+        if self.diagnostic:
+            print(f"next_step: steps is now {self.steps}")
+
+    @abstractmethod
+    def finish_walk(self):
+        """
+        This method is required to order a walk to complete its fun. Since
+        some walks use a zone as a stopping point, while BasicWalk uses walk
+        length, this has to be an abstract methond.
+        """
+        pass
 
 
 class BasicWalk(Walk):
@@ -600,6 +713,7 @@ class BasicWalk(Walk):
     Overriden Instance Methods:
         _check_walk_length: used by __init__ to validate walk length before
             setting the attribute, must be an integer from 10 to 75
+        finish_walk: uses walk length to terminate the walk
 
     New Instance Methods:
         None
@@ -617,15 +731,34 @@ class BasicWalk(Walk):
             if 10 <= length <= 75:
                 return True
         return False
+    
+    def finish_walk(self):
+        """
+        BasicWalk is an infinite Walk. Therefore, walk length is used to end
+        these end these walks. All of this work happens in place using
+        instance attributes to create more Steps in W.steps.
+        """
+        while self.count <= self.length:
+            self.next_step()
 
 
 class TerminalEventWalk(Walk):
+    """
+    This class handles instances when the Walk enters a Zone that ends the
+    Walk automatically. Might be an ABC as well.
+    """
     pass
 
-class CourtWalk(Walk):
+class CourtWalk(TerminalEventWalk):
+    """
+    Special case where the zones simulate court outcomes, including verdicts.
+    """
     pass
 
-class MoraleWalk(Walk):
+class MoraleWalk(TerminalEventWalk):
+    """
+    Two competing self-terminating Walks, one for each group during a battle.
+    """
     pass
 
 #123456789b123456789c123456789d123456789e123456789f123456789g123456789h123456789
