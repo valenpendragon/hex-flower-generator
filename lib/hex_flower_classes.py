@@ -224,7 +224,7 @@ class HexFlower(OrderedDict):
     # Constant Class Attributes
     DICE = {('d6', None), (None, 'd8'), ('d6','d6'), ('d4', 'd4', 'd4'), 
             ('d6', 'd8')}
-    TYPES = {'normal', 'basic', 'terrain', 'weather'}
+    TYPES = {'normal', 'basic', 'terrain', 'weather', 'terminating'}
     ADJKEYS = {'a', 'b', 'c', 'd', 'e', 'f'}
 
     def __init__(self, d: OrderedDict, diagnostic=False):
@@ -429,8 +429,9 @@ class Walk(ABC):
         Note: Each subclass is required to use the class attribute, types,
         to control the supported HexFlower types. W.TYPES is a set containing
         strings listing said types. Here are a couple examples:
-            types = {'normal', 'basic'}
-            types = {'terrain', 'weather'}
+            TYPES = {'normal', 'basic'}
+            TYPES = {'terrain', 'weather'}
+            TYPES = {'terminating'}
     
     Instance Attributes:
         type: str, the type of Walk being performed
@@ -449,6 +450,15 @@ class Walk(ABC):
     
     Class Methods:
         None
+
+    Instance Methods:
+        roll_dice: generates a random roll based on w.hf.dice. All Walks
+            should use this method
+        next_step: calls self.roll_dice and uses the result and the values
+            in h.adjacency and w.bias to determine what the next step for
+            this walk will be, should not be overridden by Walk subclasses
+        finish_walk: abstract method used to complete different Walk types,
+            should be unique for each Walk subclass
 
     Internal Class Methods:
         _check_walk_length: used by __init__ to validate walk length before
@@ -495,7 +505,7 @@ class Walk(ABC):
         effort to focus overrides on the internal methods instead of the
         dunder methods.
 
-        __init__ calls the follogin internal methods:
+        __init__ calls the following internal methods:
             _check_walk_length: validate walk length before setting the
                 attribute
             _check_walk_type: validate that the HexFlower is the correct type
@@ -635,12 +645,12 @@ class Walk(ABC):
         beyond an end point, as it ignores the length.
         """
         roll = self.roll_dice()
-        last_step = self.count
         self.count += 1
-        last_hex = self.steps[-1].hex
+        last_step = self.steps[-1]
+        last_hex = last_step.hex
         adjacency = self.hf[last_hex].adjacency
         if self.diagnostic:
-            print(f"next_step: roll is {roll}, last step is {last_step}")
+            print(f"next_step: roll is {roll}, last step is {last_step}.")
             print(f"next_step: last hex is {last_hex}, adjacency is {adjacency}.")
             print(f"next_step: step is now {self.count}")
         # There are two instances that moves are directly blocked by the dice
@@ -666,7 +676,9 @@ class Walk(ABC):
                 print(f"next_step: new move is {new_step}")
         else:
             # Movement is blocked
-            new_step = self.steps[-1]
+            new_step = Step(step_num=self.count,
+                            hex=last_step.hex,
+                            effect=last_step.effect)
             if self.diagnostic:
                 print(f"next_step: Movement is blocked.")
         self.steps.append(new_step)
@@ -681,6 +693,13 @@ class Walk(ABC):
         length, this has to be an abstract methond.
         """
         pass
+
+    def __len__(self) -> int:
+        """
+        All Walks will have W.steps, even if other attributes and arguments
+        change. That is how length will be determined.
+        """
+        return len(self.steps)
 
 
 class BasicWalk(Walk):
@@ -738,24 +757,248 @@ class BasicWalk(Walk):
         these end these walks. All of this work happens in place using
         instance attributes to create more Steps in W.steps.
         """
-        while self.count <= self.length:
+        while self.count < self.length:
             self.next_step()
 
 
-class TerminalEventWalk(Walk):
+class SelfTerminatingWalk(Walk):
     """
-    This class handles instances when the Walk enters a Zone that ends the
-    Walk automatically. Might be an ABC as well.
-    """
-    pass
+    SelfTerminatingWalk(hf: HexFlower, start_zone="start", diagnostic=False)
+    
+    Arguments:
+        hf: HexFlower, required, must be "terminating"
+        start_zone: str (default: "start"), Zone type of the starting Hex
 
-class CourtWalk(TerminalEventWalk):
+    This class handles instances when the Walk enters a Zone that ends the
+    Walk automatically. Might be an ABC as well. This Walk requires a Hex
+    Flower that is type "terminating" which means that it has a Zone of type
+    "end" or "terminus" for at most one Hex, along with Zone "start" with at
+    least one Hex. Usually, "start" and "end are Hexes 1 and 19 respectively.
+
+    The Walk tables remain the same as the ABC Walk and use the same
+    distributions. The difference is that the class attribute, types, is
+    overridden.
+
+    Class Attributes (constants):
+        UNIFORMBIAS: dict, handles a uniform distribution around the Hex edges
+        NUNIFORMBIAS: dict, also a uniform bias distribution, but 2 options
+            produce None automatically
+        STANDARDBIAS: dict, handles the original bias table created for this
+            determination method which biases toward the lower left Hexes,
+            uses 2d6
+        SOUTHBIAS: dict, a "bell curve" bias the focuses movement toward the
+            lower hexes, uses 3d4
+        SPECIAL: dict, this provides a wider distribution across lower
+            hexes, uses d6+d8 to produce the distribution
+        TYPES: the set {"terminating"}
+        TERMINUS_TYPES: set of str, set of Zone types that can terminate a
+            self-terminating Walk
+        
+        Note: Most of these bias tables can be found in the Hex Flower
+        Cookbook by Goblin's Henchman. This is an implementation of the 
+        Navigation Hexes.
+        
+        Note: Terminating HexFlowers should only use one Hex with a Zone
+        type that will terminate this Walk. It will skew results too much
+        otherwise.
+
+    Instance Attributes:
+        type: str, the type of Walk being performed
+        start: int, determined by _determine_start_hex using the "start"
+            Hexes
+        start_zone: str, drawn from arguments
+        count: int, starts at 0, counter for the steps taken
+        hf: HexFlower, the actual data used during the Walk
+        steps: list, contains namedtuples in the form Step(step_num: int,
+            hex: int, effect: str or None)
+        diagnostic: bool, optional (default: False), determines if the
+            program will print diagnostic messages to stdio
+        bias: dict, set to the bias the dice calls for, drawn from the class
+            constants
+ 
+        Note: count is still used to keep track of the number of steps in the
+        Walk, but it is not used to end it. steps still stores the same tuples
+        for each step in the walk, since self-terminating Walks are good for 
+        testing the acceptance of a local community for adventuring parties
+        (partly murder hobos) and volcanic behavior.
+
+        Removed Attributes (from Walk): length
+
+    Class Methods:
+        None
+
+    Instance Methods:
+        roll_dice: generates a random roll based on w.hf.dice. All Walks
+            should use this method and inherit is as is.
+        next_step: calls self.roll_dice and uses the result and the values
+            in h.adjacency and w.bias to determine what the next step for
+            this walk will be. it is not overriden with this class.
+        finish_walk: completes the walk
+        __init__: overridden to use the new internal methods and to set up
+            new attributes
+
+    Internal Class Methods:
+        _check_walk_length: returns True to prevent problems with the 
+            abstract method that it comes from
+        _check_type: used by __init__ to validate that the HexFlower is a
+            compatible type for the Walk being run before setting the
+            attribute, inherited from Walk as is
+        _check_walk_start: this method verifies that at least 1 Hex has the
+            "start" Zone type, returns True if so, False otherwise
+        _check_walk_stop: this method checks to see if the right number of 
+            ending zones matching matching end_zone are correct. returns 
+            True if so, False otherwise, override this method if more than one
+            termination Hex is required
+        _determine_bias: assigns the value of the correct class constant to
+            W.bias attribute, performed in place when called by __init__,
+            inherited from Walk as is.
+        _determine_start_hex: this method randomly picks the starting Hex from
+            a list of all Hex with Zone type "start"
+        _check_zone: this returns True if the Zone type matches TERMINATION
+            TYPES, False otherwise
+    """
+    TYPES = {"terminating"}
+    TERMINUS_TYPES = {'end', 'stop', 'terminus', 'eruption', 'pitch forks', 
+                      'special'}
+
+    def __init__(self, hf: HexFlower, start_zone='start', diagnostic=False):
+        """
+        This class requires a HexFlower object that has been properly
+        imported and validated by its class constructor. It must also be of
+        type 'terminating'. Otherwise, this method will raise a ValueError.
+        
+        Data validation is handled by internal class methods listed below.
+
+        __init__ calls the following methods:
+            _check_type: used by __init__ to validate that the HexFlower is a
+                compatible type for the Walk being run before setting the
+                attribute, remains unchanged
+            _check_walk_start: this method verifies that at least 1 Hex has
+                the "start" Zone type, raises a ValueError if not
+            _check_walk_stop: this method verifies that end Hexes are
+                configured correctly in the HexFlower, at least 1 is always
+                required
+            _determine_bias: assigns the value of the correct class constant
+                to W.bias attribute, performed in place
+            _determine_start_hex: this method randomly picks the starting Hex
+                from a list of all Hex with Zone type "start"
+        """
+        self.diagnostic = diagnostic
+        self.steps = []
+        if self._check_walk_type(hf.type):
+            self.type = hf.type
+            self.hf = hf
+        else:
+            raise ValueError(f"{hf.type} is not compatible with this Walk class.")
+        if self._check_walk_start(start_zone):
+            self.start = self._determine_start_hex(start_zone)
+            self.start_zone = start_zone
+            self.steps.append(Step(0, self.start, self.hf[self.start].zone.effect))
+        else:
+            raise ValueError(f"STW: HexFlower has no Hexes defined as start type: {start_zone}.")
+        if not self._check_walk_stop():
+            raise ValueError(f"STW: HexFlower has the wrong number of terminating Zone types.")
+        self.count = 0
+        self.bias = self._determine_bias()
+        if self.diagnostic:
+            print(f"{self.__class__.__name__} has been initialized successfully.")
+            print(f"Terminating Walk object is now {self}.")
+    
+    def _check_walk_length(self) -> bool:
+        """
+        Overridden to always return True because it is not used in this
+        subclass.
+        """
+        return True
+    
+    def _check_walk_start(self, start) -> bool:
+        """
+        Verifies that at least 1 Hex with Zone type 'start' exists in the HF.
+        Returns True if so, False otherwise.
+        """
+        for i in range(1, 20):
+            if self.diagnostic:
+                print(f"STW: Zone type for Hex {i} is {self.hf[i].zone.label}")
+            if self.hf[i].zone.type == start:
+                return True
+        return False
+
+    def _check_walk_stop(self) -> bool:
+        """
+        Returns True if the correct number of terminating Hexes exist. It 
+        scans the HF counting the number of Zone types matching TERMINATION
+        TYPES. For STW, at least 1 is required, but there is no upper limit.
+        Other self-terminating walks may have different requirements. This
+        internal method exists to make overriding the checks easier. Keep in
+        mind that too many terminating Zones will make the Walk stop very
+        quickly. That is why the counter max is set to 18 (1 to start, the
+        other 18 stop it). The HexFlower would be malformed otherwise.
+        """
+        min_terms = 1
+        max_terms = 18
+        ctr = 0
+        for i in range(1, 20):
+            if self.hf[i].zone.type in self.TERMINUS_TYPES:
+                ctr += 1
+        return (min_terms <= ctr <= max_terms)
+
+    def _determine_start_hex(self, start) -> int:
+        """
+        Creates a list of all Hex labels for Hexes with Zone type 'start',
+        randomly picks one, and returns that value.
+        """
+        start_hexes = []
+        for i in range(1, 20):
+            if self.hf[i].zone.type == start:
+                start_hexes.append(i)
+        hex_idx = random.randint(0, len(start_hexes) - 1)
+        return start_hexes[hex_idx]
+
+    def _check_zone(self) -> bool:
+        """
+        Returns True if the Zone of the most recent step is a termination
+        zone, False otherwise.
+        """
+        hex = self.steps[-1].hex
+        zone = self.hf[hex].zone.type
+        return (zone in self.TERMINUS_TYPES)        
+
+    def finish_walk(self):
+        """
+        Single steps the Walk until it finds an terminating Zone type.
+        """
+        while not self._check_zone():
+            self.next_step()
+    
+    def __str__(self) -> str:
+        """
+        This dunder method must be overridden because the attributes changed.
+        self.length no longer exists.
+        """
+        s1 = f"{self.__class__.__name__} with attributes: type: {self.type}, "
+        s2 = f"start: {self.start}, start zone: {self.start_zone}, "
+        s3 = f"count: {self.count}, hf: {self.hf}, steps: {self.steps}, "
+        s4 = f"diagnostic: {self.diagnostic}, bias: {self.bias}."
+        return s1 + s2 + s3 + s4        
+
+    def __repr__(self):
+        """
+        This dunder method must be overridden because the arguments changed
+        for this subclass.
+        """
+        s1 = f"{self.__class__.__name__}(hf={repr(self.hf)}, "
+        s2 = f"start_zone={self.start_zone}, diagnostic="
+        s3 = f"{self.diagnostic})"
+        return s1 + s2 + s3
+
+
+class CourtWalk():
     """
     Special case where the zones simulate court outcomes, including verdicts.
     """
     pass
 
-class MoraleWalk(TerminalEventWalk):
+class MoraleWalk():
     """
     Two competing self-terminating Walks, one for each group during a battle.
     """
