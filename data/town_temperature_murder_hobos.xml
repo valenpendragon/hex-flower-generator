@@ -1,0 +1,212 @@
+<?xml version="1.0" standalone='yes'?>
+<hex_flower type="terminating" dice="(d6,d6)">
+    	<hex id="1">
+    	<zone  type="start" label="accepted" icon="null" color="yellow" effect="accepted"></zone>
+        <adjacency>
+            <a>5</a>
+            <b>3</b>
+            <c>3</c>
+            <d>5</d>
+            <e>2</e>
+            <f>2</f>
+        </adjacency>
+	</hex>
+    <hex id="2">
+        <zone type="tepid" label="quiet" icon="null" color="yellow" effect="quiet"></zone>
+        <adjacency>
+            <a>7</a>
+            <b>5</b>
+            <c>1</c>
+            <d>17</d>
+            <e>11</e>
+            <f>4</f>
+        </adjacency>        
+    </hex>
+    <hex id="3">
+        <zone type="tepid" label="ambivalent" icon="null" color="yellow" effect="ambivalent"></zone>
+        <adjacency>
+            <a>8</a>
+            <b>6</b>
+            <c>9</c>
+            <d>18</d>
+            <e>1</e>
+            <f>5</f>
+        </adjacency>        
+    </hex>
+    <hex id="4">
+        <zone type="tepid" label="disquiet" icon="null" color="yellow" effect="disquiet"></zone>
+        <adjacency>
+            <a>9</a>
+            <b>7</b>
+            <c>2</c>
+            <d>14</d>
+            <e>16</e>
+            <f>1</f>
+        </adjacency>        
+    </hex>
+    <hex id="5">
+        <zone type="tepid" label="looks and snarks" icon="null" color="yellow" effect="looks and snarks"></zone>
+        <adjacency>
+            <a>10</a>
+            <b>8</b>
+            <c>3</c>
+            <d>1</d>
+            <e>2</e>
+            <f>7</f>
+        </adjacency>
+    </hex>
+    <hex id="6">
+        <zone type="tepid" label="disapproval" icon="null" color="yellow" effect="disapproval"></zone>
+        <adjacency>
+            <a>11</a>
+            <b>1</b>
+            <c>14</c>
+            <d>16</d>
+            <e>3</e>
+            <f>8</f>
+        </adjacency>        
+    </hex>
+    <hex id="7">
+        <zone type="tepid" label="restless" icon="null" color="yellow" effect="restless"></zone>
+        <adjacency>
+            <a>12</a>
+            <b>10</b>
+            <c>5</c>
+            <d>2</d>
+            <e>4</e>
+            <f>9</f>
+        </adjacency>        
+    </hex>
+    <hex id="8">
+        <zone type="tepid" label="resentment" icon="null" color="yellow" effect="resentment"></zone>
+        <adjacency>
+            <a>13</a>
+            <b>11</b>
+            <c>6</c>
+            <d>3</d>
+            <e>5</e>
+            <f>10</f>
+        </adjacency>        
+    </hex>
+    <hex id="9">
+        <zone type="official disdain" label="police nose around" icon="null" color="purple" effect="police nose around"></zone>
+        <adjacency>
+            <a>14</a>
+            <b>12</b>
+            <c>7</c>
+            <d>4</d>
+            <e>18</e>
+            <f>3</f>
+        </adjacency>        
+    </hex>
+    <hex id="10">
+        <zone type="special" label="10" icon="null" color="lightblue" effect="special"></zone>
+        <adjacency>
+            <a>15</a>
+            <b>13</b>
+            <c>8</c>
+            <d>5</d>
+            <e>7</e>
+            <f>12</f>
+        </adjacency>        
+    </hex>
+    <hex id="11">
+        <zone type="influential disdain" label="faithful offended" icon="null" color="green" effect="faithful offended"></zone>
+        <adjacency>
+            <a>16</a>
+            <b>2</b>
+            <c>17</c>
+            <d>6</d>
+            <e>8</e>
+            <f>13</f>
+        </adjacency>        
+    </hex>
+    <hex id="12">
+        <zone type="official disdain" label="judge proboes" icon="null" color="purple" effect="judge proboes"></zone>
+        <adjacency>
+            <a>17</a>
+            <b>15</b>
+            <c>10</c>
+            <d>7</d>
+            <e>9</e>
+            <f>14</f>
+        </adjacency>        
+    </hex>
+    <hex id="13">
+        <zone type="influential disdain" label="taxman peeks" icon="null" color="green" effect="taxman peeks"></zone>
+        <adjacency>
+            <a>18</a>
+            <b>16</b>
+            <c>11</c>
+            <d>8</d>
+            <e>10</e>
+            <f>15</f>
+        </adjacency>        
+    </hex>
+    <hex id="14">
+        <zone type="official disdain" label="mayor agitates" icon="null" color="purple" effect="mayor agitates"></zone>
+        <adjacency>
+            <a>4</a>
+            <b>17</b>
+            <c>12</c>
+            <d>9</d>
+            <e>19</e>
+            <f>6</f>
+        </adjacency>        
+    </hex>
+    <hex id="15">
+        <zone type="active trouble" label="guilds furious" icon="null" color="orange" effect="guilds furious"></zone>
+        <adjacency>
+            <a>19</a>
+            <b>18</b>
+            <c>13</c>
+            <d>10</d>
+            <e>12</e>
+            <f>17</f>
+        </adjacency>        
+    </hex>
+    <hex id="16">
+        <zone type="influential disdain" label="priest whispers" icon="null" color="green" effect="priest whispers"></zone>
+        <adjacency>
+            <a>6</a>
+            <b>4</b>
+            <c>19</c>
+            <d>11</d>
+            <e>13</e>
+            <f>18</f>
+        </adjacency>        
+    </hex>
+    <hex id="17">
+        <zone type="active trouble" label="judiciary acts" icon="null" color="orange" effect="judiciary acts"></zone>
+        <adjacency>
+            <a>2</a>
+            <b>19</b>
+            <c>15</c>
+            <d>12</d>
+            <e>14</e>
+            <f>11</f>
+        </adjacency>        
+    </hex>
+    <hex id="18">
+        <zone type="active trouble" label="clergy livid" icon="null" color="orange" effect="clergy livid"></zone>
+        <adjacency>
+            <a>3</a>
+            <b>9</b>
+            <c>16</c>
+            <d>13</d>
+            <e>15</e>
+            <f>19</f>
+        </adjacency>        
+    </hex>
+    <hex id="19">
+        <zone type="pitch forks" label="pitch forks" icon="null" color="red" effect="pitch forks"></zone>
+        <adjacency>
+            <a>null</a>
+            <b>null</b>
+            <c>18</c>
+            <d>15</d>
+            <e>17</e>
+            <f>null</f>
+        </adjacency>        
+    </hex>
+</hex_flower>
