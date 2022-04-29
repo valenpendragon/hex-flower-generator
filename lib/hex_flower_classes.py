@@ -435,7 +435,7 @@ class Walk(ABC):
     
     Instance Attributes:
         type: str, the type of Walk being performed
-        length: int, the lenght of the Walk, 0 indicates infinite
+        length: int, the length of the Walk, 0 indicates infinite
         start: int, optional, defaults to 1
         count: int, starts at 0, counter for the steps
         hf: HexFlower, the actual data used during the Walk
@@ -446,7 +446,8 @@ class Walk(ABC):
         bias: dict, set to the bias the dice calls for, drawn from the class
             constants
         Note: The length of the Walk is the number of steps taken after the
-        start position is added. So, len(w.steps) = w.length + 1.
+        start position is added. So, at the end of a walk,
+        len(w.steps) = w.length + 1.
     
     Class Methods:
         None
@@ -469,7 +470,7 @@ class Walk(ABC):
         _check_walk_start: validate that the start is an integer, and is
             usable for this subclass of Walk.
         _determine_bias: assigns the value of the correct class constant to
-            W.bias attribute, performed in place when called by __init__.
+            w.bias attribute, performed in place when called by __init__.
         Note: _check_walk_start is NOT an abstract method. It is coded here
         because most subclasses of Walk can use it unchanged.
 
@@ -613,10 +614,10 @@ class Walk(ABC):
 
     def _determine_bias(self) -> dict:
         """
-        When called by __init__,  this method uses the dice tuple, W.dice, to
-        identify the correct class constant to assign to W.bias and returns
+        When called by __init__,  this method uses the dice tuple, w.dice, to
+        identify the correct class constant to assign to w.bias and returns
         it. The method counts the types of dice in the tuple and stores them
-        in
+        in d_ctr, a dictionary of integer counters.
         """
         dice = self.hf.dice
         d_ctr = {'d4': 0, 'd6': 0, 'd8': 0}
@@ -640,7 +641,7 @@ class Walk(ABC):
     
     def next_step(self):
         """
-        This method adds a new Step to the W.steps list. All of its operations
+        This method adds a new Step to the w.steps list. All of its operations
         are performed in place. This method can be used to single step a walk
         beyond an end point, as it ignores the length.
         """
@@ -668,7 +669,6 @@ class Walk(ABC):
             new_hex = adjacency[self.bias[roll]]
         if new_hex:
             # Movement is not blocked.
-            effect = self.hf[new_hex].zone.effect
             new_step = Step(step_num=self.count, 
                             hex=new_hex, 
                             effect=self.hf[new_hex].zone.effect)
@@ -696,7 +696,7 @@ class Walk(ABC):
 
     def __len__(self) -> int:
         """
-        All Walks will have W.steps, even if other attributes and arguments
+        All Walks will have w.steps, even if other attributes and arguments
         change. That is how length will be determined.
         """
         return len(self.steps)
@@ -992,7 +992,7 @@ class SelfTerminatingWalk(Walk):
         return s1 + s2 + s3
 
 
-class CourtWalk():
+class CourtWalk(SelfTerminatingWalk):
     """
     Special case where the zones simulate court outcomes, including verdicts.
     """
